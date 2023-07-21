@@ -9,15 +9,35 @@ class Player: public entity
     const int maxhealth=100; 
     int health;
     float nitro;
-
+    SDL_Texture* texture2;
+    SDL_Texture* flytexture;
     int mouseX, mouseY;
+    int lives = 3;
 
     public:
-    Player(float px, float py,float pw, float ph, SDL_Texture* t):entity(px,py,pw,ph,t)
+    Uint32 lastAnimationUpdateTime = 0;
+    Player(float px, float py,float pw, float ph, SDL_Texture* t,SDL_Texture* t2,SDL_Texture* t3):entity(px,py,pw,ph,t)
     {   
         health =100;
         nitro =100;
+        texture2 = t2;
+        flytexture = t3;
     }
+
+    int getlives()
+    {
+        return lives;
+    }
+
+    SDL_Texture* getTxt2()
+    {
+        return texture2;
+    }
+    SDL_Texture* getflytexture()
+    {
+        return flytexture;
+    }
+
     void movedown()
     {
         getframe().y+=1;
@@ -133,6 +153,7 @@ class Player: public entity
         {  
             getframe().y = 500;
             nitro = 100;
+            lives -=1;
         }
         if(!isFlying && !isOnGround(entities))
         {

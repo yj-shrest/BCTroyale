@@ -31,12 +31,15 @@ int main(int argc, char *argv[])
     SDL_Texture *rectplatform2 = window.loadTexture("assets/rectplatform2.png");
     SDL_Texture *sqplatform = window.loadTexture("assets/sqplatform.png");
     SDL_Texture *playertexture = window.loadTexture("assets/char.png");
+    SDL_Texture *playerflyingtexture = window.loadTexture("assets/charnitro.png");
+    SDL_Texture *playerwtexture = window.loadTexture("assets/charw.png");
     SDL_Texture *weapontexture = window.loadTexture("assets/weapon.png");
     SDL_Texture *healthBarRectTexture = window.loadTexture("assets/healthbarrect.png");
     SDL_Texture *healthBarTexture = window.loadTexture("assets/healthbar.png");
     SDL_Texture *nitroBarTexture = window.loadTexture("assets/nitrobar.png");
     SDL_Texture *gamelogoTexture = window.loadTexture("assets/gamelogo.png");
     SDL_Texture *namemenuTexture = window.loadTexture("assets/namemenu.png");
+    SDL_Texture *heartTexture = window.loadTexture("assets/heart.png");
 
 
     entity bg(0,0,3000,1500,background);
@@ -48,6 +51,9 @@ int main(int argc, char *argv[])
     entity nitrobar(10,40,200,20,nitroBarTexture);
     entity gamelogo(0,0,1100,700,gamelogoTexture);
     entity namemenu(0,0,1100,700,namemenuTexture);
+    entity lives(200,9,40,40,heartTexture);
+
+
 
     vector <entity> platforms; 
     platforms.push_back(entity(100,1000,500,500,sqplatform));
@@ -57,7 +63,7 @@ int main(int argc, char *argv[])
     platforms.push_back(entity(1400,1200,500,300,rectplatform1));
     platforms.push_back(entity(2500,1000,500,500,sqplatform));
     platforms.push_back(entity(2270,1200,230,300,rectplatform2));
-    Player player(2500,700,75,100,playertexture);
+    Player player(2500,700,75,100,playertexture,playerwtexture,playerflyingtexture);
     Weapon weapon(2500,700,50,20,weapontexture);
     const int gvalue= 10;
     bool init= true;
@@ -69,6 +75,7 @@ int main(int argc, char *argv[])
     bool typing = true;
     bool inputname = false;
     int i =0;
+    int walk =0;
     while (true)
     { 
         camera.update(position(player.getframe().x,player.getframe().y));
@@ -152,12 +159,13 @@ int main(int argc, char *argv[])
         window.render(bg2,camera.getPosition()); 
         window.render(bg3,camera.getPosition()); 
         window.render(platforms,camera.getPosition()); 
-        window.render(player,camera.getPosition(),mousedirection);
+        window.renderplayer(player,camera.getPosition(),walk,mousedirection);
         window.render(healthbarrect,position(0,0));
         window.render(nitrobarrect,position(0,0));
         window.render(healthbar,position(0,0));
         window.render(nitrobar,position(0,0));
         window.render(weapon,player,mousedirection);
+        window.renderlives(player,lives);
 
         window.rendername(textInput);
         player.update(platforms);

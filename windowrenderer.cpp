@@ -51,6 +51,44 @@ class renderwindow
             SDL_RenderCopyEx(renderer,ent.getTxt(), NULL, &dst, 0, NULL, SDL_FLIP_HORIZONTAL);
         }
     }
+    void renderplayer(Player &p,position camerapos, int &i,int direction =1)
+    {
+        SDL_Rect dst;
+        SDL_Texture *t;
+        dst.x=p.getframe().x - camerapos.x;
+        dst.y=p.getframe().y - camerapos.y;
+        dst.w= p.getframe().w;
+        dst.h = p.getframe().h;
+        t = p.getTxt();
+        Uint32 currentTicks = SDL_GetTicks();
+    Uint32 animationDelay = 150; // Adjust the delay to control the animation speed (milliseconds)
+    
+    if (p.isMovingSideways && currentTicks - p.lastAnimationUpdateTime > animationDelay)
+    {
+        if (t == p.getTxt())
+        {
+            t = p.getTxt2();
+        }
+        else
+        {
+             
+            t = p.getTxt();
+        }
+        p.lastAnimationUpdateTime = currentTicks;
+    }
+    if(p.isFlying)
+    {
+        dst.h +=10;
+        t = p.getflytexture();
+    }
+        if (direction ==1)
+        {
+        SDL_RenderCopy(renderer,t,NULL,&dst);
+        }
+        else{
+            SDL_RenderCopyEx(renderer,t, NULL, &dst, 0, NULL, SDL_FLIP_HORIZONTAL);
+        }
+    }
     void render(std::vector<entity>& entities,position camerapos) {
     SDL_Rect dst;
     for (entity& e : entities) {
@@ -78,6 +116,18 @@ class renderwindow
     SDL_RenderCopyEx(renderer, weapon.getTxt(), NULL, &dst, angleDegrees, &center, SDL_FLIP_VERTICAL);
     else
     SDL_RenderCopyEx(renderer, weapon.getTxt(), NULL, &dst, angleDegrees, &center, SDL_FLIP_NONE);
+    }
+
+    void renderlives(Player &p, entity &h)
+    {
+        int l = p.getlives();
+        SDL_Rect dst = h.getframe();
+
+        for(int i = 0;i<l;i++)
+        {
+            dst.x += 50;
+            SDL_RenderCopy(renderer,h.getTxt(),NULL,&dst);
+        }
     }
 
     void rendername(string name)
@@ -114,7 +164,6 @@ class renderwindow
 
         SDL_RenderCopy(renderer, textTexture, NULL, &dst);
     }
-
     void display()
     {
         SDL_RenderPresent(renderer);
