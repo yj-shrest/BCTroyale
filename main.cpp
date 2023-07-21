@@ -6,7 +6,7 @@ using namespace std;
 #include"position.cpp"
 #include"Entity.cpp"
 #include "player.cpp"
-#include "Weapon.cpp"
+#include "weapon.cpp"
 #include"camera.cpp"
 #include"windowrenderer.cpp"
 const int width = 1100, height = 700;
