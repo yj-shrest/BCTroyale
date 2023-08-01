@@ -28,7 +28,10 @@ class Player: public entity
     {
         return lives;
     }
-
+    void refill()
+    {
+        lives =3;
+    }
     SDL_Texture* getTxt2()
     {
         return texture2;

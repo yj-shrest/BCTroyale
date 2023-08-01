@@ -99,6 +99,18 @@ class renderwindow
         SDL_RenderCopy(renderer, e.getTxt(), NULL, &dst);
     }
     }
+    void render(std::vector<Bullet>& bull) {
+    SDL_Rect dst;
+    for (Bullet& b : bull) {
+        dst.x = b.getframe().x;
+        dst.y = b.getframe().y ;
+        dst.w = b.getframe().w;
+        dst.h = b.getframe().h;
+        double angleDegrees =-b.gettheta() * (180.0 / M_PI);
+        SDL_Point center = { dst.w / 2, dst.h / 2 };
+        SDL_RenderCopyEx(renderer, b.getTxt(), NULL, &dst, angleDegrees, &center, SDL_FLIP_NONE);
+    }
+    }
     void render(Weapon &weapon,Player p,int dir) {
     int mouseX, mouseY;
     SDL_GetMouseState(&mouseX, &mouseY);
@@ -111,7 +123,7 @@ class renderwindow
     double deltaY = mouseY - dst.y;
     double angleRadians = atan2(deltaY, deltaX);
     double angleDegrees = angleRadians * (180.0 / M_PI);
-    SDL_Point center = { dst.w / 2, dst.h / 2 };
+    SDL_Point center = { 50 / 2, dst.h / 2 };
     if (dir ==-1)
     SDL_RenderCopyEx(renderer, weapon.getTxt(), NULL, &dst, angleDegrees, &center, SDL_FLIP_VERTICAL);
     else

@@ -15,4 +15,11 @@ class Weapon : public entity
     {
 
     }
+    position getcentrepos()
+    {
+        int x, y;
+        x = getframe().x +getframe().w/2;
+        y = getframe().y +getframe().h/2;
+        return position(x,y);
+    }
 };

@@ -8,7 +8,9 @@ using namespace std;
 #include "player.cpp"
 #include "weapon.cpp"
 #include"camera.cpp"
+#include "Bullet.cpp"
 #include"windowrenderer.cpp"
+#include "mob.cpp"
 const int width = 1100, height = 700;
 const int FPS = 60;
 const int frameDelay = 1000 / FPS;
@@ -34,13 +36,17 @@ int main(int argc, char *argv[])
     SDL_Texture *playerflyingtexture = window.loadTexture("assets/charnitro.png");
     SDL_Texture *playerwtexture = window.loadTexture("assets/charw.png");
     SDL_Texture *weapontexture = window.loadTexture("assets/weapon.png");
+    SDL_Texture *weaponfiretexture = window.loadTexture("assets/weaponfire.png");
     SDL_Texture *healthBarRectTexture = window.loadTexture("assets/healthbarrect.png");
     SDL_Texture *healthBarTexture = window.loadTexture("assets/healthbar.png");
     SDL_Texture *nitroBarTexture = window.loadTexture("assets/nitrobar.png");
     SDL_Texture *gamelogoTexture = window.loadTexture("assets/gamelogo.png");
     SDL_Texture *namemenuTexture = window.loadTexture("assets/namemenu.png");
     SDL_Texture *heartTexture = window.loadTexture("assets/heart.png");
-
+    SDL_Texture *gameoverTexture = window.loadTexture("assets/gameover.png");
+    SDL_Texture *modesTexture = window.loadTexture("assets/modes.png");
+    SDL_Texture *mobTexture = window.loadTexture("assets/mob.png");
+    SDL_Texture *bulletTexture = window.loadTexture ("assets/bullet.png");
 
     entity bg(0,0,3000,1500,background);
     entity bg2(-3000,0,3000,1500,background);
@@ -52,7 +58,9 @@ int main(int argc, char *argv[])
     entity gamelogo(0,0,1100,700,gamelogoTexture);
     entity namemenu(0,0,1100,700,namemenuTexture);
     entity lives(200,9,40,40,heartTexture);
-
+    entity gameOverScreen(0,0,1100,700,gameoverTexture);
+    entity modesScreen(0,0,1100,700,modesTexture);
+    mob firstmob(1150,680,120,125,mobTexture);
 
 
     vector <entity> platforms; 
@@ -63,19 +71,27 @@ int main(int argc, char *argv[])
     platforms.push_back(entity(1400,1200,500,300,rectplatform1));
     platforms.push_back(entity(2500,1000,500,500,sqplatform));
     platforms.push_back(entity(2270,1200,230,300,rectplatform2));
+    platforms.push_back(entity(1150,680,120,125,mobTexture));
     Player player(2500,700,75,100,playertexture,playerwtexture,playerflyingtexture);
     Weapon weapon(2500,700,50,20,weapontexture);
+    Weapon weaponfire(2500,700,70,20,weaponfiretexture);
+
+    vector <Bullet> bullets;
     const int gvalue= 10;
     bool init= true;
 
     int mousedirection= 1;
     int mouseX, mouseY;
-    
+    int clickx,clicky;
+    bool leftclick= false;
+    bool lefthold = false;
     string textInput = "Type here...";
     bool typing = true;
-    bool inputname = false;
-    int i =0;
+    int screen = 1;
+    bool hitenter = false;
+    int i =1;
     int walk =0;
+    Uint32 bulletstart;
     while (true)
     { 
         camera.update(position(player.getframe().x,player.getframe().y));
@@ -97,12 +113,15 @@ int main(int argc, char *argv[])
             else if (windowevent.key.keysym.sym == SDLK_UP) {
             player.jump();
             }
+            else if(windowevent.key.keysym.sym == SDLK_RETURN && player.getlives()==0){
+                hitenter = true;
+            }   
 
             if (typing) {
                     
                     if (windowevent.key.keysym.sym == SDLK_RETURN) {
                         typing = false; // Finish typing on pressing Enter
-                        inputname = true;
+                        screen += 1;
                     }
                     else if (windowevent.key.keysym.sym == SDLK_BACKSPACE && textInput.length() > 0) {
                         textInput.pop_back(); // Delete the last character on pressing Backspace
@@ -117,6 +136,19 @@ int main(int argc, char *argv[])
                 }
                 textInput += windowevent.text.text; // Append the entered character to the text input
             }
+            else if (windowevent.type == SDL_MOUSEBUTTONDOWN) {
+            if (windowevent.button.button == SDL_BUTTON_LEFT) {
+            int clickx = windowevent.button.x; // X coordinate of the mouse
+            int clicky = windowevent.button.y; // Y coordinate of the mouse
+            leftclick = true;
+            lefthold = true;
+            }
+            } 
+            else if (windowevent.type == SDL_MOUSEBUTTONUP) {
+            if (windowevent.button.button == SDL_BUTTON_LEFT) {
+            lefthold = false;
+            }
+            } 
             }
             if (windowevent.type == SDL_KEYUP) {
                 if (windowevent.key.keysym.sym == SDLK_LEFT || windowevent.key.keysym.sym == SDLK_RIGHT) {
@@ -139,40 +171,81 @@ int main(int argc, char *argv[])
         init = false;
         }
 
-        if(inputname == false)
+        if(screen ==1)
         {
             window.render(bg,position(0,0));
             window.render(namemenu,position(0,0));
             window.inputname(textInput);
             window.display();
         }
+        else if(screen ==2)
+        {   
+            if(leftclick)
+            {
+                screen = 3;
+            }
+            window.render(bg,position(0,0));
+            window.render(modesScreen,position(0,0));
+            window.display();
 
+        }
+        else if(player.getlives()==0)
+        {
+            if(hitenter)
+            {
+                player.refill();
+                hitenter = false;
+            }
+            window.render(bg,position(0,0));
+            window.render(gameOverScreen,position(0,0));
+            window.display();
+        }
         else
         {
-        SDL_GetMouseState(&mouseX, &mouseY);
-        if(mouseX<550) mousedirection = -1;
-        if(mouseX>=550) mousedirection =1;
+            SDL_GetMouseState(&mouseX, &mouseY);
+            if(mouseX<550) mousedirection = -1;
+            if(mouseX>=550) mousedirection =1;
 
+            window.clear();
+            window.render(bg,camera.getPosition()); 
+            window.render(bg2,camera.getPosition()); 
+            window.render(bg3,camera.getPosition()); 
+            window.render(platforms,camera.getPosition()); 
+            window.render(firstmob, camera.getPosition());
+            window.renderplayer(player,camera.getPosition(),walk,mousedirection);
+            window.render(healthbarrect,position(0,0));
+            window.render(nitrobarrect,position(0,0));
+            window.render(healthbar,position(0,0));
+            window.render(nitrobar,position(0,0));
+            window.renderlives(player,lives);
 
-        window.clear();
-        window.render(bg,camera.getPosition()); 
-        window.render(bg2,camera.getPosition()); 
-        window.render(bg3,camera.getPosition()); 
-        window.render(platforms,camera.getPosition()); 
-        window.renderplayer(player,camera.getPosition(),walk,mousedirection);
-        window.render(healthbarrect,position(0,0));
-        window.render(nitrobarrect,position(0,0));
-        window.render(healthbar,position(0,0));
-        window.render(nitrobar,position(0,0));
-        window.render(weapon,player,mousedirection);
-        window.renderlives(player,lives);
+            window.rendername(textInput);
 
-        window.rendername(textInput);
-        player.update(platforms);
-        healthbar.updateHealth(player);
-        nitrobar.updatenitro(player);
-        window.display();
+            if(lefthold)
+            {
+                if(SDL_GetTicks() -  bulletstart >100)
+                {
+
+               bullets.push_back(Bullet(575,420,16,4,bulletTexture,mouseX,mouseY));
+               bulletstart = SDL_GetTicks();
+                }
+            }
+            window.render(bullets);
+            if(lefthold)
+            {
+            window.render(weaponfire,player,mousedirection);
+            }
+            else window.render(weapon,player,mousedirection);
+            for (Bullet& b : bullets) {
+                b.update();
+            }
+            player.update(platforms);
+            healthbar.updateHealth(player);
+            nitrobar.updatenitro(player);
+            window.display();
         }
+
+        leftclick = false;
 
 
         frameTime = SDL_GetTicks() - frameStart;
