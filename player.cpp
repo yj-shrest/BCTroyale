@@ -23,7 +23,10 @@ class Player: public entity
         texture2 = t2;
         flytexture = t3;
     }
-
+    position getpos()
+    {
+        return position(getframe().x,getframe().y);
+    }
     int getlives()
     {
         return lives;
@@ -143,7 +146,7 @@ class Player: public entity
         if(isFlying)
         {
             getframe().y -= getspeed();
-            nitro-=0.5f;
+            //nitro-=0.5f;
         }
         if(isOnGround(entities))
         {   if(nitro<100)

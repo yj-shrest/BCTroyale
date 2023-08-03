@@ -47,7 +47,7 @@ int main(int argc, char* argv[]) {
         SDL_RenderClear(renderer);
 
         // Render the text input box
-        SDL_Color textColor = { 0, 0, 0, 255 };
+        SDL_Color textColor = { 255, 0, 0, 255 };
         SDL_Surface* textSurface = TTF_RenderText_Solid(font, textInput.c_str(), textColor);
         SDL_Texture* textTexture = SDL_CreateTextureFromSurface(renderer, textSurface);
         SDL_FreeSurface(textSurface);

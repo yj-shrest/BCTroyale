@@ -8,9 +8,10 @@ using namespace std;
 #include "player.cpp"
 #include "weapon.cpp"
 #include"camera.cpp"
-#include "Bullet.cpp"
-#include"windowrenderer.cpp"
 #include "mob.cpp"
+#include "Bullet.cpp"
+#include "Crosshair.cpp"
+#include"windowrenderer.cpp"
 const int width = 1100, height = 700;
 const int FPS = 60;
 const int frameDelay = 1000 / FPS;
@@ -47,6 +48,7 @@ int main(int argc, char *argv[])
     SDL_Texture *modesTexture = window.loadTexture("assets/modes.png");
     SDL_Texture *mobTexture = window.loadTexture("assets/mob.png");
     SDL_Texture *bulletTexture = window.loadTexture ("assets/bullet.png");
+    SDL_Texture *crosshairTexture = window.loadTexture ("assets/crosshair.png");
 
     entity bg(0,0,3000,1500,background);
     entity bg2(-3000,0,3000,1500,background);
@@ -60,8 +62,14 @@ int main(int argc, char *argv[])
     entity lives(200,9,40,40,heartTexture);
     entity gameOverScreen(0,0,1100,700,gameoverTexture);
     entity modesScreen(0,0,1100,700,modesTexture);
-    mob firstmob(1150,680,120,125,mobTexture);
+    Crosshair crosshair(0,0,9,9,crosshairTexture);
 
+
+
+    vector <mob> mobs;
+    mobs.push_back(mob(1150,680,120,125,mobTexture,healthBarTexture,healthBarRectTexture));
+    // mobs.push_back(mob(1600,1080,120,125,mobTexture,healthBarTexture,healthBarRectTexture));
+    // mobs.push_back(mob(2350,1080,120,125,mobTexture,healthBarTexture,healthBarRectTexture));
 
     vector <entity> platforms; 
     platforms.push_back(entity(100,1000,500,500,sqplatform));
@@ -71,14 +79,14 @@ int main(int argc, char *argv[])
     platforms.push_back(entity(1400,1200,500,300,rectplatform1));
     platforms.push_back(entity(2500,1000,500,500,sqplatform));
     platforms.push_back(entity(2270,1200,230,300,rectplatform2));
-    platforms.push_back(entity(1150,680,120,125,mobTexture));
-    Player player(2500,700,75,100,playertexture,playerwtexture,playerflyingtexture);
+    Player player(1000,700,75,100,playertexture,playerwtexture,playerflyingtexture);
     Weapon weapon(2500,700,50,20,weapontexture);
     Weapon weaponfire(2500,700,70,20,weaponfiretexture);
 
-    vector <Bullet> bullets;
+    vector <Bullet> mybullets;
+    vector <Bullet> Enemybullets;
     const int gvalue= 10;
-    bool init= true;
+    bool init= false;
 
     int mousedirection= 1;
     int mouseX, mouseY;
@@ -87,11 +95,11 @@ int main(int argc, char *argv[])
     bool lefthold = false;
     string textInput = "Type here...";
     bool typing = true;
-    int screen = 1;
+    int screen = 3;
     bool hitenter = false;
-    int i =1;
+    int i =0;
     int walk =0;
-    Uint32 bulletstart;
+    Uint32 bulletstart1,bulletstart2;
     while (true)
     { 
         camera.update(position(player.getframe().x,player.getframe().y));
@@ -162,6 +170,7 @@ int main(int argc, char *argv[])
 
         
         window.clear();
+        
         if(init)
         {
         window.render(bg,position(0,0)); 
@@ -201,7 +210,7 @@ int main(int argc, char *argv[])
             window.display();
         }
         else
-        {
+        {   SDL_ShowCursor(SDL_DISABLE);
             SDL_GetMouseState(&mouseX, &mouseY);
             if(mouseX<550) mousedirection = -1;
             if(mouseX>=550) mousedirection =1;
@@ -211,7 +220,7 @@ int main(int argc, char *argv[])
             window.render(bg2,camera.getPosition()); 
             window.render(bg3,camera.getPosition()); 
             window.render(platforms,camera.getPosition()); 
-            window.render(firstmob, camera.getPosition());
+            window.render(mobs, camera.getPosition());
             window.renderplayer(player,camera.getPosition(),walk,mousedirection);
             window.render(healthbarrect,position(0,0));
             window.render(nitrobarrect,position(0,0));
@@ -223,23 +232,68 @@ int main(int argc, char *argv[])
 
             if(lefthold)
             {
-                if(SDL_GetTicks() -  bulletstart >100)
+                if(SDL_GetTicks() -  bulletstart1 >100)
                 {
 
-               bullets.push_back(Bullet(575,420,16,4,bulletTexture,mouseX,mouseY));
-               bulletstart = SDL_GetTicks();
+               mybullets.push_back(Bullet(575,420,16,4,bulletTexture,mouseX,mouseY,camera.getPosition()));
+               bulletstart1 = SDL_GetTicks();
                 }
             }
-            window.render(bullets);
+            window.render(mybullets,camera.getPosition());
             if(lefthold)
             {
             window.render(weaponfire,player,mousedirection);
             }
             else window.render(weapon,player,mousedirection);
-            for (Bullet& b : bullets) {
+
+            window.render(crosshair,position(0,0));
+           std::vector<Bullet> newBullets;
+           std::vector<mob> newMobs;
+
+
+            for (Bullet& b : mybullets) {
                 b.update();
+                if (!b.hit(platforms) && b.isinrange() &&!b.hit(mobs)) {
+                    newBullets.push_back(b);
+                }   
             }
+            for (mob& m : mobs) {
+                if (m.hit(mybullets)) {
+                    m.update();
+                }  
+                 if (!(m.gethp()<0)) {
+                    newMobs.push_back(m);
+                }  
+            }
+
+            // Replace the bullets vector with the new vector
+            mybullets = std::move(newBullets);
+            mobs = std::move(newMobs);
+            
+            
+            //Mobs firing bullet part:
+            float dx = player.getpos().x- 1150;
+            float dy = player.getpos().y- 680;
+            float distance  = std::sqrt(dx * dx + dy * dy);
+            if(distance<400)
+            {
+
+            if(SDL_GetTicks() - bulletstart2>200)
+            {
+            Enemybullets.push_back(Bullet(1150,680,16,4,bulletTexture,player.getpos()));
+            bulletstart2 = SDL_GetTicks();
+            }
+            }
+            for (Bullet& b : Enemybullets) 
+            {
+                b.update();   
+            }
+            window.render(Enemybullets,camera.getPosition());
+
+
+            crosshair.update(mouseX,mouseY);
             player.update(platforms);
+            
             healthbar.updateHealth(player);
             nitrobar.updatenitro(player);
             window.display();
@@ -255,6 +309,7 @@ int main(int argc, char *argv[])
         }
     }
     window.cleanup();
+    SDL_ShowCursor(SDL_ENABLE);
     SDL_Quit();
     return 0;
 }

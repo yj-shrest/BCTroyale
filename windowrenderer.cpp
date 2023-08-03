@@ -96,17 +96,41 @@ class renderwindow
         dst.y = e.getframe().y - camerapos.y;
         dst.w = e.getframe().w;
         dst.h = e.getframe().h;
-        SDL_RenderCopy(renderer, e.getTxt(), NULL, &dst);
+        SDL_RenderCopy(renderer, e.getTxt(),NULL, &dst);
     }
     }
-    void render(std::vector<Bullet>& bull) {
+    void render(std::vector<mob>& entities,position camerapos) {
+    SDL_Rect dst;
+    SDL_Rect Rdst;
+    SDL_Rect hpdst;
+    for (mob& m : entities) {
+        dst.x = m.getframe().x - camerapos.x;
+        dst.y = m.getframe().y - camerapos.y;
+        dst.w = m.getframe().w;
+        dst.h = m.getframe().h;
+        Rdst.x = m.getbigrect().x-camerapos.x; 
+        Rdst.y = m.getbigrect().y-camerapos.y;
+        Rdst.w = m.getbigrect().w;
+        Rdst.h = m.getbigrect().h;
+        hpdst.x = m.getsmallrect().x-camerapos.x; 
+        hpdst.y = m.getsmallrect().y-camerapos.y;
+        hpdst.w = m.getsmallrect().w;
+        hpdst.h = m.getsmallrect().h;
+        
+        SDL_RenderCopy(renderer, m.getTxt(),NULL, &dst);
+        SDL_RenderCopy(renderer, m.getrecttxt(),NULL, &Rdst);
+        SDL_RenderCopy(renderer, m.gethptxt(),NULL, &hpdst);
+        
+    }
+    }
+    void render(std::vector<Bullet>& bull,position cpos) {
     SDL_Rect dst;
     for (Bullet& b : bull) {
-        dst.x = b.getframe().x;
-        dst.y = b.getframe().y ;
+        dst.x = b.getframe().x - cpos.x;
+        dst.y = b.getframe().y  - cpos.y;
         dst.w = b.getframe().w;
         dst.h = b.getframe().h;
-        double angleDegrees =-b.gettheta() * (180.0 / M_PI);
+        double angleDegrees = b.gettheta() * (180.0 / M_PI);
         SDL_Point center = { dst.w / 2, dst.h / 2 };
         SDL_RenderCopyEx(renderer, b.getTxt(), NULL, &dst, angleDegrees, &center, SDL_FLIP_NONE);
     }

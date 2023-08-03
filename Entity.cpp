@@ -3,9 +3,8 @@
 #include<SDL2/SDL.h>
 #include<SDL2/SDL_image.h>
 #include<math.h>
-
 class Player;
-
+class mob;
 class entity
 {
     //position pos;
@@ -42,5 +41,5 @@ class entity
     }
     void updateHealth(Player &p);
     void updatenitro(Player &p);
-    
+
 };
