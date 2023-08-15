@@ -51,23 +51,28 @@ class renderwindow
             SDL_RenderCopyEx(renderer,ent.getTxt(), NULL, &dst, 0, NULL, SDL_FLIP_HORIZONTAL);
         }
     }
-    void renderplayer(Player &p,position camerapos, int &i,int direction =1)
+    void renderplayer(Player &p,position camerapos, int &i,int direction =1,bool firing=false)
     {
+        SDL_Texture *playertexture = loadTexture("assets/char.png");
+        SDL_Texture *playerflyingtexture =loadTexture("assets/charnitro.png");
+        SDL_Texture *playerwtexture = loadTexture("assets/charw.png");
+        SDL_Texture *weapontexture = loadTexture("assets/weapon.png");
+        SDL_Texture *weaponfiretexture = loadTexture("assets/weaponfire.png");
         SDL_Rect dst;
         SDL_Texture *t;
         dst.x=p.getframe().x - camerapos.x;
         dst.y=p.getframe().y - camerapos.y;
         dst.w= p.getframe().w;
         dst.h = p.getframe().h;
-        t = p.getTxt();
+        t = playertexture;
         Uint32 currentTicks = SDL_GetTicks();
-    Uint32 animationDelay = 150; // Adjust the delay to control the animation speed (milliseconds)
+        Uint32 animationDelay = 150; // Adjust the delay to control the animation speed (milliseconds)
     
     if (p.isMovingSideways && currentTicks - p.lastAnimationUpdateTime > animationDelay)
     {
-        if (t == p.getTxt())
+        if (t == playertexture)
         {
-            t = p.getTxt2();
+            t = playerwtexture;
         }
         else
         {
@@ -79,15 +84,38 @@ class renderwindow
     if(p.isFlying)
     {
         dst.h +=10;
-        t = p.getflytexture();
+        t = playerflyingtexture;
     }
-        if (direction ==1)
-        {
+    if (direction ==1)
+    {
         SDL_RenderCopy(renderer,t,NULL,&dst);
-        }
-        else{
+    }
+    else{
             SDL_RenderCopyEx(renderer,t, NULL, &dst, 0, NULL, SDL_FLIP_HORIZONTAL);
-        }
+    }
+    //Rendering the weapon
+    int mouseX, mouseY;
+    SDL_GetMouseState(&mouseX, &mouseY);
+    dst.x = 560;
+    dst.y = 410;
+    dst.w = p.getweaponsize().x;
+    dst.h = p.getweaponsize().y;
+    double deltaX = mouseX - dst.x;
+    double deltaY = mouseY - dst.y;
+    double angleRadians = atan2(deltaY, deltaX);
+    double angleDegrees = angleRadians * (180.0 / M_PI);
+    SDL_Texture * wt;
+    if(firing) 
+    {
+        wt = weaponfiretexture;
+        dst.w+=20;
+    }
+    else wt = weapontexture;
+    SDL_Point center = { 50 / 2, dst.h / 2 };
+    if (direction ==-1)
+    SDL_RenderCopyEx(renderer, wt, NULL, &dst, angleDegrees, &center, SDL_FLIP_VERTICAL);
+    else
+    SDL_RenderCopyEx(renderer, wt, NULL, &dst, angleDegrees, &center, SDL_FLIP_NONE);
     }
     void render(std::vector<entity>& entities,position camerapos) {
     SDL_Rect dst;
@@ -135,24 +163,6 @@ class renderwindow
         SDL_RenderCopyEx(renderer, b.getTxt(), NULL, &dst, angleDegrees, &center, SDL_FLIP_NONE);
     }
     }
-    void render(Weapon &weapon,Player p,int dir) {
-    int mouseX, mouseY;
-    SDL_GetMouseState(&mouseX, &mouseY);
-    SDL_Rect dst;
-    dst.x = 560;
-    dst.y = 410;
-    dst.w = weapon.getframe().w;
-    dst.h = weapon.getframe().h;
-    double deltaX = mouseX - dst.x;
-    double deltaY = mouseY - dst.y;
-    double angleRadians = atan2(deltaY, deltaX);
-    double angleDegrees = angleRadians * (180.0 / M_PI);
-    SDL_Point center = { 50 / 2, dst.h / 2 };
-    if (dir ==-1)
-    SDL_RenderCopyEx(renderer, weapon.getTxt(), NULL, &dst, angleDegrees, &center, SDL_FLIP_VERTICAL);
-    else
-    SDL_RenderCopyEx(renderer, weapon.getTxt(), NULL, &dst, angleDegrees, &center, SDL_FLIP_NONE);
-    }
 
     void renderlives(Player &p, entity &h)
     {
@@ -197,6 +207,23 @@ class renderwindow
         dst.y = 380;
         dst.w = textInput.length()*40;
         dst.h = 60;
+
+        SDL_RenderCopy(renderer, textTexture, NULL, &dst);
+    }
+    void rendertext(string text, position p)
+    {
+        TTF_Font* font = TTF_OpenFont("assets/Jost.ttf", 60);
+        TTF_SetFontStyle(font, TTF_STYLE_BOLD);
+        string textInput =text;
+        SDL_Color textColor = { 27, 20, 100, 255 };
+        SDL_Surface* textSurface = TTF_RenderText_Solid(font, textInput.c_str(), textColor);
+        SDL_Texture* textTexture = SDL_CreateTextureFromSurface(renderer, textSurface);
+
+        SDL_Rect dst;
+        dst.x = p.x;
+        dst.y = p.y;
+        dst.w = textInput.length()*25;
+        dst.h = 45;
 
         SDL_RenderCopy(renderer, textTexture, NULL, &dst);
     }

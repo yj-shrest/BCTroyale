@@ -1,31 +1,48 @@
 #pragma once
 
-#include<SDL2/SDL.h>
-#include<SDL2/SDL_image.h>
-#include "Entity.cpp"
-#include<vector>
+#include<random>
 class Player: public entity
 {   private:
     const int maxhealth=100; 
     int health;
     float nitro;
-    SDL_Texture* texture2;
-    SDL_Texture* flytexture;
     int mouseX, mouseY;
+    int weaponwidth, weaponheight;
     int lives = 3;
 
     public:
     Uint32 lastAnimationUpdateTime = 0;
-    Player(float px, float py,float pw, float ph, SDL_Texture* t,SDL_Texture* t2,SDL_Texture* t3):entity(px,py,pw,ph,t)
+    Player():entity(getrandomx(),700,75,100)
     {   
         health =100;
         nitro =100;
-        texture2 = t2;
-        flytexture = t3;
+        weaponwidth = 50;
+        weaponheight = 20;
+    }
+    int getrandomx()
+    {
+        // Create a random number generator engine
+    std::random_device rd;
+    std::mt19937 gen(rd()); // Mersenne Twister engine
+
+    // Define the range of random values
+    int minVal = 100;
+    int maxVal = 2400;
+
+    // Create a distribution to generate random integers within the specified range
+    std::uniform_int_distribution<int> dis(minVal, maxVal);
+
+    // Generate and print a random integer
+    int randomNumber = dis(gen);
+    return randomNumber;
     }
     position getpos()
     {
         return position(getframe().x,getframe().y);
+    }
+    position getweaponsize()
+    {
+        return position(weaponwidth,weaponheight);
     }
     int getlives()
     {
@@ -34,14 +51,6 @@ class Player: public entity
     void refill()
     {
         lives =3;
-    }
-    SDL_Texture* getTxt2()
-    {
-        return texture2;
-    }
-    SDL_Texture* getflytexture()
-    {
-        return flytexture;
     }
 
     void movedown()
