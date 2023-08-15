@@ -11,7 +11,6 @@ class Server
 private:
     sf::IpAddress serverIp;
     vector<sf::IpAddress> playerIps;
-    json middleground;
     bool started = false;
     bool gameover = false;
     bool isChange = false;
@@ -20,6 +19,7 @@ private:
     sf::Clock clock;
     sf::UdpSocket broadcastingSocket;
     sf::IpAddress broadcastAddress = sf::IpAddress::Broadcast;
+    sf::UdpSocket dataSocket;
         
 public:
     Server(renderwindow &w) : window(w)
@@ -31,22 +31,24 @@ public:
             cout << "Binding failure" << endl;
             return;
         }
+        
 
+
+        
     }
     void startgame(){
         started = true;
     }
+    void initialize()
+    {
+        if (dataSocket.bind(5000) != sf::Socket::Done)
+        {
+            cerr << "Binding failure" << endl;
+        }
+    }
     json incomingThread()
     {   
-        sf::UdpSocket dataSocket;
-    
-        unsigned short DATA_SOCKET = 10000;
-
-        if (dataSocket.bind(DATA_SOCKET) != sf::Socket::Done)
-        {
-            cout << "Binding failure" << endl;
-            return json();
-        }
+        
         // Initializing data in
         char buffer[1024];
         std::size_t received;
@@ -57,8 +59,9 @@ public:
         std::string playerName;
         dataSocket.setBlocking(false);
         // cerr<<"gotit";
-            if (dataSocket.receive(buffer, sizeof(buffer), received, senderIp, senderPort) == sf::Socket::Done)
+            if (dataSocket.receive(buffer, sizeof(buffer)+1, received, senderIp, senderPort) == sf::Socket::Done)
             {
+
                 dataIn = json::parse(buffer);
                 dataIn["found"] = true;
                 playerName = dataIn["name"].as<std::string>();
@@ -71,26 +74,33 @@ public:
                     isChange = true;
 
                  }
-             json dataout;
-             dataout["confirm"] = true;
-             string data = dataout.as_string();
-             if(broadcastingSocket.send(data.c_str(),data.size()+1,broadcastAddress,15000 ) != sf::Socket::Done)
-             {
-                 cout<<"Error";
-             }
             }
             return dataIn;
         }
     
 
-    void broadcastingThread()
+    void broadcastingThread(vector<Player> players)
     {
-        
-
+        vector<string> playernames;
+        for(Player &p: players)
+    {
+        playernames.push_back(p.getname());
+    }
         json dataOut;
         dataOut["host"] = "Random";
         dataOut["Ip"] = serverIp.toString();
         dataOut["started"] = false;
+        dataOut["confirm"] = false;
+        json playersArray = json::array(); // Create a JSON array
+
+        for (Player &p : players)
+        {
+            json playerJson;
+            playerJson["name"] = p.getname();
+            // Add more attributes as needed
+            playersArray.push_back(playerJson);
+        }
+        dataOut["players"]= playersArray;
         std::string jsonString;
         
         broadcastingSocket.setBlocking(false);
