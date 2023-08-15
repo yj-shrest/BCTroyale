@@ -2,6 +2,10 @@
 #include<SDL2/SDL.h>
 #include <vector>
 #include<string>
+#include <thread>
+#include <jsoncons/json.hpp>
+
+using jsoncons::json;
 using namespace std;
 #include "position.cpp"
 #include "Entity.cpp"
@@ -11,6 +15,9 @@ using namespace std;
 #include "Bullet.cpp"
 #include "Crosshair.cpp"
 #include "windowrenderer.cpp"
+#include "client.cpp"
+#include "server.cpp"
+
 const int width = 1100, height = 700;
 const int FPS = 60;
 const int frameDelay = 1000 / FPS;
@@ -42,6 +49,7 @@ int main(int argc, char *argv[])
     SDL_Texture *gameoverTexture = window.loadTexture("assets/gameover.png");
     SDL_Texture *modesTexture = window.loadTexture("assets/modes.png");
     SDL_Texture *hostjoinTexture = window.loadTexture("assets/hostjoin.png");
+    SDL_Texture *joinbuttonTexture = window.loadTexture("assets/joinbutton.png");
     SDL_Texture *lobbyTexture = window.loadTexture("assets/lobby.png");
     SDL_Texture *mobTexture = window.loadTexture("assets/mob.png");
     SDL_Texture *bulletTexture = window.loadTexture ("assets/bullet.png");
@@ -61,6 +69,7 @@ int main(int argc, char *argv[])
     entity modesScreen(0,0,1100,700,modesTexture);
     entity hostjoinScreen(0,0,1100,700,hostjoinTexture);
     entity lobbyScreen(0,0,1100,700,lobbyTexture);
+    entity joinbutton(300,300,500,120,joinbuttonTexture);
     Crosshair crosshair(0,0,9,9,crosshairTexture);
 
 
@@ -79,7 +88,7 @@ int main(int argc, char *argv[])
     platforms.push_back(entity(2500,1000,500,500,sqplatform));
     platforms.push_back(entity(2270,1200,230,300,rectplatform2));
     Player player;
-
+    vector <Player> players;
     vector <Bullet> mybullets;
     vector <Bullet> Enemybullets;
     const int gvalue= 10;
@@ -94,9 +103,14 @@ int main(int argc, char *argv[])
     bool typing = true;
     int screen = 1;
     bool hitenter = false;
+    bool foundgame = false;
     int i =0;
     int walk =0;
+    bool once= true; 
     Uint32 bulletstart1,bulletstart2;
+
+    Client c(window);
+    Server s(window);
     while (true)
     { 
         camera.update(position(player.getframe().x,player.getframe().y));
@@ -317,10 +331,12 @@ int main(int argc, char *argv[])
                     if(mouseY>200 && mouseY<310)
                     {
                         screen = 5;//host 
+                       
                     }
                     if(mouseY>360 && mouseY<480)
                     {
                         screen = 6;//join
+                        
                     }
                 }
             }
@@ -329,11 +345,73 @@ int main(int argc, char *argv[])
             window.display();
         }
         else if(screen ==5)
-        {
+        {   
+            if(players.size()==0) {
+                players.push_back(Player(textInput));
+            }
+            json dataIn;
+            bool foundInData = false;
+            thread graphicsThread([&]() {
+            window.clear();
             window.render(bg,position(0,0));
             window.render(lobbyScreen,position(0,0));
-            window.rendertext(textInput,position(90,200));
+            SDL_Delay(16);
+                });
+
+            thread broadcastThread([&]() {
+            s.broadcastingThread();
+            });
+
+            thread inThread([&]() {
+            dataIn = s.incomingThread();
+            foundInData = dataIn["found"].as_bool();
+            });
+            if(foundInData)
+            {   cout<<"Player added";
+                players.push_back(Player(dataIn["name"].as<std::string>()));
+            }
+            graphicsThread.join();
+            broadcastThread.join();
+            inThread.join();
+            int var = 0;
+            for(Player &p: players)
+            {
+            window.rendertext(p.getname(),position(90,200+var*40));
+            var+=1;
+            }
             window.display();
+        }
+        else if(screen ==6)
+        {
+            if(once)
+            {
+                c.initialize();
+                once = false;
+            }
+            thread graphicsThread([&]() {
+            window.clear();
+            window.render(bg,position(0,0));
+            SDL_Delay(16);
+                });
+
+        // Start the network communication thread
+            std::thread networkThread([&]() {
+            foundgame = c.scanningThread();
+            });
+
+        // Wait for the graphics and network threads to finish
+        graphicsThread.join();
+        networkThread.join();
+        if(foundgame)
+        {
+            window.render(joinbutton,position(0,0));
+        if(leftclick)
+            {   
+               screen =7;
+               c.sendconfirmation(textInput);     
+            }
+        }
+        window.display();
         }
         leftclick = false;
 
