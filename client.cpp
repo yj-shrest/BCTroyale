@@ -62,7 +62,7 @@ public:
         window.rendertext(show,position(300,200));   
         return found;         
     }
-    void sendconfirmation(string n)
+    bool sendconfirmation(string n)
     {
             serverIp = hostIp;
             json join;
@@ -76,5 +76,14 @@ public:
             {
                 cout<<"confirmation sent"<<endl;
             }
+            if(receivingSocket.receive(buffer,sizeof(buffer),received,hostIp,senderPort) == sf::Socket::Done )
+            {
+                json data = json::parse(buffer);
+                if(data["confirm"].as_bool()==true)
+                {
+                    return true;
+                }
+            }
+            return false;
     }
 };

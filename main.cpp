@@ -107,6 +107,7 @@ int main(int argc, char *argv[])
     int i =0;
     int walk =0;
     bool once= true; 
+    bool loop = false;
     Uint32 bulletstart1,bulletstart2;
 
     Client c(window);
@@ -406,9 +407,16 @@ int main(int argc, char *argv[])
         {
             window.render(joinbutton,position(0,0));
         if(leftclick)
-            {   
-               screen =7;
-               c.sendconfirmation(textInput);     
+        {
+            loop = true;
+        }
+         if(loop)   
+         {   
+               if(c.sendconfirmation(textInput))
+               {
+                screen = 7;
+                loop = false;
+               }     
             }
         }
         window.display();

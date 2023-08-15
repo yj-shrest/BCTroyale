@@ -18,12 +18,20 @@ private:
     char c;
     renderwindow window;
     sf::Clock clock;
-
+    sf::UdpSocket broadcastingSocket;
+    sf::IpAddress broadcastAddress = sf::IpAddress::Broadcast;
+        
 public:
     Server(renderwindow &w) : window(w)
     {
         serverIp = sf::IpAddress::getLocalAddress();
         playerIps.push_back(serverIp);
+        if (broadcastingSocket.bind(0) != sf::Socket::Done)
+        {
+            cout << "Binding failure" << endl;
+            return;
+        }
+
     }
     void startgame(){
         started = true;
@@ -61,7 +69,15 @@ public:
                     playerIps.push_back(senderIp);
                     cerr << "Added player IP: " << senderIp << " to the vector." << endl;
                     isChange = true;
-                }
+
+                 }
+             json dataout;
+             dataout["confirm"] = true;
+             string data = dataout.as_string();
+             if(broadcastingSocket.send(data.c_str(),data.size()+1,broadcastAddress,15000 ) != sf::Socket::Done)
+             {
+                 cout<<"Error";
+             }
             }
             return dataIn;
         }
@@ -69,20 +85,14 @@ public:
 
     void broadcastingThread()
     {
-        sf::UdpSocket broadcastingSocket;
         
-        if (broadcastingSocket.bind(0) != sf::Socket::Done)
-        {
-            cout << "Binding failure" << endl;
-            return;
-        }
 
         json dataOut;
         dataOut["host"] = "Random";
         dataOut["Ip"] = serverIp.toString();
         dataOut["started"] = false;
         std::string jsonString;
-        sf::IpAddress broadcastAddress = sf::IpAddress::Broadcast;
+        
         broadcastingSocket.setBlocking(false);
         jsonString = dataOut.to_string();
         if (clock.getElapsedTime().asMilliseconds() >= 5000) // Broadcast every 5 second
