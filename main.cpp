@@ -114,6 +114,7 @@ int main(int argc, char *argv[])
     bool gamestarted;
     Client c(window);
     Server s(window);
+    int number =0;
     while (true)
     { 
         
@@ -393,6 +394,7 @@ int main(int argc, char *argv[])
         }
         else if(screen ==6)
         {
+            //searching game
             if(once)
             {
                 c.initialize();
@@ -422,6 +424,7 @@ int main(int argc, char *argv[])
         }
         else if(screen ==7)
         {
+            //client lobby
             window.clear();
             window.render(bg,position(0,0));
             window.render(lobbyScreen,position(0,0));
@@ -496,10 +499,14 @@ int main(int argc, char *argv[])
             window.render(nitrobar,position(0,0));
 
             window.rendername(textInput);
-            camera.update(position(players[myId].getframe().x,players[myId].getframe().y));
             window.display();
             players[myId].update(platforms);
+            camera.update(position(players[myId].getframe().x,players[myId].getframe().y));
+            if(!players[myId].isOnGround(platforms) || players[myId].isMovingSideways)
+            {
             s.sendData(players[myId],mousedirection);
+            }
+            
         }
         else if(screen == 9)
         { 
@@ -509,18 +516,24 @@ int main(int argc, char *argv[])
             SDL_GetMouseState(&mouseX, &mouseY);
             if(mouseX<550) mousedirection = -1;
             if(mouseX>=550) mousedirection =1;
-            if(once)
+            if(number!=players.size())
             {
+
             json dataIn = c.receiveInitialData();
+            
             if(dataIn["found"].as_bool())
             {
                 int id = dataIn["id"].as<int>();
                 int x = dataIn["x"].as<int>();
                 int y = dataIn["y"].as<int>();
                 players[id].setvalues(x,y);
+                number++;
+                cout<<number;
             }
-            once = false;
             }
+                
+            else
+            {
             json receivedData = c.receiveData();
             if(receivedData["found"].as_bool())
             {
@@ -528,7 +541,11 @@ int main(int argc, char *argv[])
                 int x = receivedData["x"].as<int>();
                 int y = receivedData["y"].as<int>();
                 int dir = receivedData["dir"].as<int>();
-                player[id].updatePosition(x,y,dir);
+                if(id!=myId)
+                {
+                players[id].updatePosition(x,y,dir);
+                }
+            }
             }
             
             window.clear();
@@ -536,16 +553,19 @@ int main(int argc, char *argv[])
             window.render(bg2,camera.getPosition()); 
             window.render(bg3,camera.getPosition()); 
             window.render(platforms,camera.getPosition());
-            window.renderplayer(players[myId],camera.getPosition(),mousedirection,lefthold);
+            for(Player &p : players)
+            {
+            window.renderplayer(p,camera.getPosition(),p.dir,lefthold);
+            }
             window.render(healthbarrect,position(0,0));
             window.render(nitrobarrect,position(0,0));
             window.render(healthbar,position(0,0));
             window.render(nitrobar,position(0,0));
 
             window.rendername(textInput);
-            camera.update(position(players[myId].getframe().x,players[myId].getframe().y));
             window.display();
             players[myId].update(platforms);
+            camera.update(position(players[myId].getframe().x,players[myId].getframe().y));
             if(!players[myId].isOnGround(platforms) || players[myId].isMovingSideways)
             {
             c.sendData(players[myId],mousedirection);

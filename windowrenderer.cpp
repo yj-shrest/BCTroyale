@@ -98,26 +98,27 @@ class renderwindow
     //Rendering the weapon
     int mouseX, mouseY;
     SDL_GetMouseState(&mouseX, &mouseY);
-    dst.x = 560;
-    dst.y = 410;
-    dst.w = p.getweaponsize().x;
-    dst.h = p.getweaponsize().y;
-    double deltaX = mouseX - dst.x;
-    double deltaY = mouseY - dst.y;
+    SDL_Rect dst2;
+    dst2.x = dst.x+15;
+    dst2.y = dst.y+55;
+    dst2.w = p.getweaponsize().x;
+    dst2.h = p.getweaponsize().y;
+    double deltaX = mouseX - dst2.x;
+    double deltaY = mouseY - dst2.y;
     double angleRadians = atan2(deltaY, deltaX);
     double angleDegrees = angleRadians * (180.0 / M_PI);
     SDL_Texture * wt;
     if(firing) 
     {
         wt = weaponfiretexture;
-        dst.w+=20;
+        dst2.w+=20;
     }
     else wt = weapontexture;
-    SDL_Point center = { 50 / 2, dst.h / 2 };
+    SDL_Point center = { 50 / 2, dst2.h / 2 };
     if (direction ==-1)
-    SDL_RenderCopyEx(renderer, wt, NULL, &dst, angleDegrees, &center, SDL_FLIP_VERTICAL);
+    SDL_RenderCopyEx(renderer, wt, NULL, &dst2, angleDegrees, &center, SDL_FLIP_VERTICAL);
     else
-    SDL_RenderCopyEx(renderer, wt, NULL, &dst, angleDegrees, &center, SDL_FLIP_NONE);
+    SDL_RenderCopyEx(renderer, wt, NULL, &dst2, angleDegrees, &center, SDL_FLIP_NONE);
     }
     void render(std::vector<entity>& entities,position camerapos) {
     SDL_Rect dst;
