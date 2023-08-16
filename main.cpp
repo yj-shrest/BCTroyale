@@ -509,10 +509,9 @@ int main(int argc, char *argv[])
             SDL_GetMouseState(&mouseX, &mouseY);
             if(mouseX<550) mousedirection = -1;
             if(mouseX>=550) mousedirection =1;
-            json dataIn = c.receiveData();
             if(once)
             {
-
+            json dataIn = c.receiveInitialData();
             if(dataIn["found"].as_bool())
             {
                 int id = dataIn["id"].as<int>();
@@ -522,12 +521,13 @@ int main(int argc, char *argv[])
             }
             once = false;
             }
-            if(dataIn["found"].as_bool())
+            json receivedData = c.receiveData();
+            if(receivedData["found"].as_bool())
             {
-                int id = dataIn["id"].as<int>();
-                int x = dataIn["x"].as<int>();
-                int y = dataIn["y"].as<int>();
-                int dir = dataIn["dir"].as<int>();
+                int id = receivedData["id"].as<int>();
+                int x = receivedData["x"].as<int>();
+                int y = receivedData["y"].as<int>();
+                int dir = receivedData["dir"].as<int>();
                 player[id].updatePosition(x,y,dir);
             }
             

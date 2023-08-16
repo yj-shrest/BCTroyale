@@ -108,6 +108,18 @@ void sendconfirmation(string n)
                 cout<<"confirmation sent"<<endl;
             }
         }
+    json receiveInitialData()
+    {
+        json receivedJson;
+        receivedJson["found"] = false; 
+        receivingSocket.setBlocking(false);
+        if(receivingSocket.receive(buffer,sizeof(buffer)+1,received,hostIp,senderPort)== sf::Socket::Done)
+        {   
+            receivedJson = json::parse(buffer);
+            receivedJson["found"] = true;
+        }
+        return receivedJson;
+    }
     json receiveData()
     {
         json receivedJson;
