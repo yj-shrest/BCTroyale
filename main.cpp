@@ -109,7 +109,7 @@ int main(int argc, char *argv[])
     bool once= true; 
     bool loop = false;
     Uint32 bulletstart1,bulletstart2;
-
+    bool gamestarted;
     Client c(window);
     Server s(window);
     while (true)
@@ -382,6 +382,10 @@ int main(int argc, char *argv[])
             window.rendertext(p.getname(),position(90,200+var*40));
             var+=1;
             }
+            if(leftclick)
+            {
+                screen = 8;// start game
+            }
             window.display();
         }
         else if(screen ==6)
@@ -418,7 +422,7 @@ int main(int argc, char *argv[])
             window.render(bg,position(0,0));
             window.render(lobbyScreen,position(0,0));
             vector<Player> tempplayers;
-            tempplayers = c.receivingThread();
+            tempplayers = c.receivingThread(gamestarted);
             if(tempplayers.size()!=0) 
             {   
                 players.clear();
@@ -431,8 +435,55 @@ int main(int argc, char *argv[])
             window.rendertext(p.getname(),position(90,200+var*40));
             var+=1;
             }
+            if(gamestarted)
+            {
+                screen = 9; // client game
+            }
             window.display();
 
+        }
+        else if(screen == 8)
+        {
+            window.clear();
+            s.broadcastingThread(players,true);
+            SDL_ShowCursor(SDL_DISABLE);
+            SDL_GetMouseState(&mouseX, &mouseY);
+            if(mouseX<550) mousedirection = -1;
+            if(mouseX>=550) mousedirection =1;
+
+            window.clear();
+            window.render(bg,camera.getPosition()); 
+            window.render(bg2,camera.getPosition()); 
+            window.render(bg3,camera.getPosition()); 
+            window.render(platforms,camera.getPosition()); 
+            window.render(healthbarrect,position(0,0));
+            window.render(nitrobarrect,position(0,0));
+            window.render(healthbar,position(0,0));
+            window.render(nitrobar,position(0,0));
+
+            window.rendername(textInput);
+            window.display();
+        }
+        else if(screen == 9)
+        {
+            window.clear();
+            SDL_ShowCursor(SDL_DISABLE);
+            SDL_GetMouseState(&mouseX, &mouseY);
+            if(mouseX<550) mousedirection = -1;
+            if(mouseX>=550) mousedirection =1;
+
+            window.clear();
+            window.render(bg,camera.getPosition()); 
+            window.render(bg2,camera.getPosition()); 
+            window.render(bg3,camera.getPosition()); 
+            window.render(platforms,camera.getPosition());
+            window.render(healthbarrect,position(0,0));
+            window.render(nitrobarrect,position(0,0));
+            window.render(healthbar,position(0,0));
+            window.render(nitrobar,position(0,0));
+
+            window.rendername(textInput);
+            window.display();
         }
         leftclick = false;
 

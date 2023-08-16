@@ -43,7 +43,7 @@ public:
             cout<<"failure binding data socket";
         }
     }
-    vector<Player> receivingThread()
+    vector<Player> receivingThread(bool &gs)
     {
         vector<Player> receivedPlayers;
         receivingSocket.setBlocking(false);
@@ -52,15 +52,14 @@ public:
     
                json receivedJson = json::parse(buffer);
                 std::vector<Player> players;
-
-                json playersArray = receivedJson["players"];
-
+                vector <string> playersArray = receivedJson["players"].as<vector<string>>();
+                gs = receivedJson["started"].as_bool();
                 for (size_t i = 0; i < playersArray.size(); ++i)
                 {
-                    json playerJson = playersArray[i];
-                    string playerName = playerJson["name"].as<string>();
+                    string playerName = playersArray[i];
                     // Extract more attributes as needed
                     Player player(playerName);
+                    cout<<playerName;
                     receivedPlayers.push_back(player);
                 }
                 return receivedPlayers;
@@ -96,13 +95,11 @@ void sendconfirmation(string n)
             receivingSocket.setBlocking(false);
             serverIp = hostIp;
             sf::IpAddress IP = "192.168.1.108";
-            sf::UdpSocket sendSocket;
-            sendSocket.bind(6000);
-            sendSocket.setBlocking(false);
+
             json join;
             join["name"]= n;
             jsonString = join.to_string();
-            sf::Socket::Status sendStatus = sendSocket.send(jsonString.c_str(), jsonString.size()+1, hostIp, 5000);
+            sf::Socket::Status sendStatus = dataSocket.send(jsonString.c_str(), jsonString.size()+1, hostIp, 5000);
             if (sendStatus != sf::Socket::Done) {
                 if(sendStatus == sf::Socket::Error)
             cout << "Socket error: " << sendStatus << endl;

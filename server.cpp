@@ -79,7 +79,7 @@ public:
         }
     
 
-    void broadcastingThread(vector<Player> players)
+    void broadcastingThread(vector<Player> players,bool st= false)
     {
         vector<string> playernames;
         for(Player &p: players)
@@ -87,20 +87,10 @@ public:
         playernames.push_back(p.getname());
     }
         json dataOut;
-        dataOut["host"] = "Random";
+        dataOut["host"] = players[0].getname();
         dataOut["Ip"] = serverIp.toString();
-        dataOut["started"] = false;
-        dataOut["confirm"] = false;
-        json playersArray = json::array(); // Create a JSON array
-
-        for (Player &p : players)
-        {
-            json playerJson;
-            playerJson["name"] = p.getname();
-            // Add more attributes as needed
-            playersArray.push_back(playerJson);
-        }
-        dataOut["players"]= playersArray;
+        dataOut["started"] = st;
+        dataOut["players"]= json(playernames);
         std::string jsonString;
         
         broadcastingSocket.setBlocking(false);
