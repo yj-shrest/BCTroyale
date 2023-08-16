@@ -20,6 +20,10 @@ private:
     sf::UdpSocket broadcastingSocket;
     sf::IpAddress broadcastAddress = sf::IpAddress::Broadcast;
     sf::UdpSocket dataSocket;
+    char buffer[1024];
+    std::size_t received;
+    unsigned short senderPort;
+    sf::IpAddress senderIp;
         
 public:
     Server(renderwindow &w) : window(w)
@@ -41,7 +45,7 @@ public:
     }
     void initialize()
     {
-        if (dataSocket.bind(5000) != sf::Socket::Done)
+        if (dataSocket.bind(10000) != sf::Socket::Done)
         {
             cerr << "Binding failure" << endl;
         }
@@ -50,10 +54,7 @@ public:
     {   
         
         // Initializing data in
-        char buffer[1024];
-        std::size_t received;
-        unsigned short senderPort;
-        sf::IpAddress senderIp;
+       
         json dataIn;
         dataIn["found"] = false;
         std::string playerName;
@@ -77,7 +78,21 @@ public:
             }
             return dataIn;
         }
-    
+    json receiveData()
+    {   
+        char buffer[1024];
+        std::size_t received;
+        unsigned short senderPort;
+        json receivedJson;
+        receivedJson["found"] = false; 
+        dataSocket.setBlocking(false);
+        if(dataSocket.receive(buffer,sizeof(buffer)+1,received,senderIp,senderPort)== sf::Socket::Done)
+        {   
+            receivedJson = json::parse(buffer);
+            receivedJson["found"] = true;
+        }
+        return receivedJson;
+    }
 
     void broadcastingThread(vector<Player> players,bool st= false)
     {

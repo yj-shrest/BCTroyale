@@ -436,7 +436,11 @@ int main(int argc, char *argv[])
             int var = 0;
             for(Player &p: players)
             {
-                if(textInput == p.getname()) myId = p.getid(); 
+                if(textInput == p.getname()) 
+                {
+                    myId = p.getid();
+                    player = &players[myId];
+                }
                 window.rendertext(to_string(p.getid())+". "+p.getname(),position(90,200+var*40));
                 var+=1;
             }
@@ -515,6 +519,7 @@ int main(int argc, char *argv[])
             camera.update(position(players[myId].getframe().x,players[myId].getframe().y));
             window.display();
             players[myId].update(platforms);
+            
         }
         leftclick = false;
 
