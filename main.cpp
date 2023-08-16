@@ -406,9 +406,6 @@ int main(int argc, char *argv[])
             SDL_Delay(16);
                 
             foundgame = c.scanningThread();
-            
-
-    
          if(foundgame)
         {
             window.render(joinbutton,position(0,0));
@@ -488,6 +485,7 @@ int main(int argc, char *argv[])
             window.render(bg2,camera.getPosition()); 
             window.render(bg3,camera.getPosition()); 
             window.render(platforms,camera.getPosition()); 
+            window.render(crosshair,position(0,0));
             for(Player &p : players)
             {
             window.renderplayer(p,camera.getPosition(),p.dir,lefthold);
@@ -501,6 +499,7 @@ int main(int argc, char *argv[])
             window.rendername(textInput);
             window.display();
             players[myId].update(platforms);
+            crosshair.update(mouseX,mouseY);
             camera.update(position(players[myId].getframe().x,players[myId].getframe().y));
             if(!players[myId].isOnGround(platforms) || players[myId].isMovingSideways)
             {
@@ -561,9 +560,10 @@ int main(int argc, char *argv[])
             window.render(nitrobarrect,position(0,0));
             window.render(healthbar,position(0,0));
             window.render(nitrobar,position(0,0));
-
+            window.render(crosshair,position(0,0));
             window.rendername(textInput);
             window.display();
+            crosshair.update(mouseX,mouseY);
             players[myId].update(platforms);
             camera.update(position(players[myId].getframe().x,players[myId].getframe().y));
             if(!players[myId].isOnGround(platforms) || players[myId].isMovingSideways)
