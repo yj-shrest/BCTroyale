@@ -461,7 +461,7 @@ int main(int argc, char *argv[])
             for(Player &p: players)
             {
                 p.setvalues();
-                s.sendData(p);
+                s.sendInitialData(p);
                 player = &players[myId];
             }
             once = false;
@@ -499,7 +499,7 @@ int main(int argc, char *argv[])
             camera.update(position(players[myId].getframe().x,players[myId].getframe().y));
             window.display();
             players[myId].update(platforms);
-            s.sendData(players[myId]);
+            s.sendData(players[myId],mousedirection);
         }
         else if(screen == 9)
         { 

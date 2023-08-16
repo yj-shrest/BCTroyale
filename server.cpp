@@ -156,12 +156,25 @@ public:
         
     }
 
-        void sendData(Player &p)
+        void sendInitialData(Player &p)
         {
             json dataOut;
             dataOut["id"] = p.getid();
             dataOut["x"] = p.getframe().x;
             dataOut["y"] = p.getframe().y;
+            string data = dataOut.to_string();
+            if(broadcastingSocket.send(data.c_str(),data.size()+1,broadcastAddress,15000) !=sf::Socket::Done)
+            {
+                cout<<"error";
+            }
+        }
+        void sendData(Player &p,int dir)
+        {
+            json dataOut;
+            dataOut["id"] = p.getid();
+            dataOut["x"] = p.getframe().x;
+            dataOut["y"] = p.getframe().y;
+            dataOut["dir"] = dir;
             string data = dataOut.to_string();
             if(broadcastingSocket.send(data.c_str(),data.size()+1,broadcastAddress,15000) !=sf::Socket::Done)
             {
