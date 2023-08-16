@@ -88,11 +88,17 @@ public:
         dataSocket.setBlocking(false);
         if(dataSocket.receive(buffer,sizeof(buffer)+1,received,senderIp,senderPort)== sf::Socket::Done)
         {   
+            cout<<"got data";
             receivedJson = json::parse(buffer);
             receivedJson["found"] = true;
+            if(broadcastingSocket.send(buffer, sizeof(buffer)+1, broadcastAddress, 15000)!=sf::Socket::Done)
+            {
+                cout<<"error forwarding data";
+            }
         }
         return receivedJson;
     }
+
 
     void broadcastingThread(vector<Player> players,bool st= false)
     {

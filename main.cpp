@@ -466,6 +466,15 @@ int main(int argc, char *argv[])
             }
             once = false;
             }
+            json receivedData = s.receiveData();
+            if(receivedData["found"].as_bool())
+            {
+                int id = receivedData["id"].as<int>();
+                int x = receivedData["x"].as<int>();
+                int y = receivedData["y"].as<int>();
+                int dir = receivedData["dir"].as<int>();
+                player[id].updatePosition(x,y,dir);
+            }
             SDL_ShowCursor(SDL_DISABLE);
             SDL_GetMouseState(&mouseX, &mouseY);
             if(mouseX<550) mousedirection = -1;
@@ -476,7 +485,10 @@ int main(int argc, char *argv[])
             window.render(bg2,camera.getPosition()); 
             window.render(bg3,camera.getPosition()); 
             window.render(platforms,camera.getPosition()); 
-            window.renderplayer(players[myId],camera.getPosition(),mousedirection,lefthold);
+            for(Player &p : players)
+            {
+            window.renderplayer(p,camera.getPosition(),p.dir,lefthold);
+            }
             // cout<<players[0].getframe().x<<endl;
             window.render(healthbarrect,position(0,0));
             window.render(nitrobarrect,position(0,0));
@@ -487,6 +499,7 @@ int main(int argc, char *argv[])
             camera.update(position(players[myId].getframe().x,players[myId].getframe().y));
             window.display();
             players[myId].update(platforms);
+            s.sendData(players[myId]);
         }
         else if(screen == 9)
         { 
@@ -497,6 +510,9 @@ int main(int argc, char *argv[])
             if(mouseX<550) mousedirection = -1;
             if(mouseX>=550) mousedirection =1;
             json dataIn = c.receiveData();
+            if(once)
+            {
+
             if(dataIn["found"].as_bool())
             {
                 int id = dataIn["id"].as<int>();
@@ -504,6 +520,17 @@ int main(int argc, char *argv[])
                 int y = dataIn["y"].as<int>();
                 players[id].setvalues(x,y);
             }
+            once = false;
+            }
+            if(dataIn["found"].as_bool())
+            {
+                int id = dataIn["id"].as<int>();
+                int x = dataIn["x"].as<int>();
+                int y = dataIn["y"].as<int>();
+                int dir = dataIn["dir"].as<int>();
+                player[id].updatePosition(x,y,dir);
+            }
+            
             window.clear();
             window.render(bg,camera.getPosition()); 
             window.render(bg2,camera.getPosition()); 
@@ -519,7 +546,10 @@ int main(int argc, char *argv[])
             camera.update(position(players[myId].getframe().x,players[myId].getframe().y));
             window.display();
             players[myId].update(platforms);
-            
+            if(!players[myId].isOnGround(platforms) || players[myId].isMovingSideways)
+            {
+            c.sendData(players[myId],mousedirection);
+            }
         }
         leftclick = false;
 

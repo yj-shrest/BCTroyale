@@ -11,8 +11,8 @@ class Player: public entity
     int lives = 3;
     int id;
     string name;
-
     public:
+    int dir;
     Uint32 lastAnimationUpdateTime = 0;
 
     Player(string n,int i)
@@ -170,6 +170,12 @@ class Player: public entity
             }
         }
         return false;
+    }
+    void updatePosition(int x, int y,int d)
+    {
+        getframe().x = x;
+        getframe().y = y;
+        dir = d;
     }
     void update(std::vector<entity>& entities) {
         

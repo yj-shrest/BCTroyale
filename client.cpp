@@ -98,7 +98,7 @@ void sendconfirmation(string n)
             json join;
             join["name"]= n;
             jsonString = join.to_string();
-            sf::Socket::Status sendStatus = dataSocket.send(jsonString.c_str(), jsonString.size()+1, hostIp, 5000);
+            sf::Socket::Status sendStatus = dataSocket.send(jsonString.c_str(), jsonString.size()+1, hostIp, 10000);
             if (sendStatus != sf::Socket::Done) {
                 if(sendStatus == sf::Socket::Error)
             cout << "Socket error: " << sendStatus << endl;
@@ -113,19 +113,20 @@ void sendconfirmation(string n)
         json receivedJson;
         receivedJson["found"] = false; 
         receivingSocket.setBlocking(false);
-        if(receivingSocket.receive(buffer,sizeof(buffer)+1,received,serverIp,senderPort)== sf::Socket::Done)
+        if(receivingSocket.receive(buffer,sizeof(buffer)+1,received,hostIp,senderPort)== sf::Socket::Done)
         {   
             receivedJson = json::parse(buffer);
             receivedJson["found"] = true;
         }
         return receivedJson;
     }
-    void sendData(Player &p)
+    void sendData(Player &p,int dir)
         {
             json dataOut;
             dataOut["id"] = p.getid();
             dataOut["x"] = p.getframe().x;
             dataOut["y"] = p.getframe().y;
+            dataOut["dir"] = dir;
             string data = dataOut.to_string();
             if(dataSocket.send(data.c_str(),data.size()+1,serverIp,10000) !=sf::Socket::Done)
             {
