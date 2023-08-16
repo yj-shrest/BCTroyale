@@ -9,18 +9,22 @@ class Player: public entity
     int mouseX, mouseY;
     int weaponwidth, weaponheight;
     int lives = 3;
+    int id;
     string name;
 
     public:
     Uint32 lastAnimationUpdateTime = 0;
-    Player(string n):entity(getrandomx(),700,75,100)
+
+    Player(string n,int i)
     {   
         name = n;
         health =100;
         nitro =100;
         weaponwidth = 50;
         weaponheight = 20;
+        id =i;
     }
+
     Player():entity(getrandomx(),700,75,100)
     {   
         health =100;
@@ -28,9 +32,23 @@ class Player: public entity
         weaponwidth = 50;
         weaponheight = 20;
     }
+    void setvalues()
+    {
+        int ran = getrandomx();
+        cout<<ran<<endl;
+        setval(ran,700);
+    }
+    void setvalues(int x, int y)
+    {
+        setval(x,y);
+    }
     string getname()
     {
         return name;
+    }
+    int getid()
+    {
+        return id;
     }
     int getrandomx()
     {

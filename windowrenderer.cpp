@@ -51,7 +51,7 @@ class renderwindow
             SDL_RenderCopyEx(renderer,ent.getTxt(), NULL, &dst, 0, NULL, SDL_FLIP_HORIZONTAL);
         }
     }
-    void renderplayer(Player &p,position camerapos, int &i,int direction =1,bool firing=false)
+    void renderplayer(Player &p,position camerapos,int direction =1,bool firing=false)
     {
         SDL_Texture *playertexture = loadTexture("assets/char.png");
         SDL_Texture *playerflyingtexture =loadTexture("assets/charnitro.png");
@@ -77,7 +77,7 @@ class renderwindow
         else
         {
              
-            t = p.getTxt();
+            t = playertexture;
         }
         p.lastAnimationUpdateTime = currentTicks;
     }
@@ -88,6 +88,8 @@ class renderwindow
     }
     if (direction ==1)
     {
+        // cout<<dst.x<<endl;
+        // cout<<dst.y<<endl;
         SDL_RenderCopy(renderer,t,NULL,&dst);
     }
     else{

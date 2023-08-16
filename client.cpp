@@ -58,7 +58,7 @@ public:
                 {
                     string playerName = playersArray[i];
                     // Extract more attributes as needed
-                    Player player(playerName);
+                    Player player(playerName,i);
                     cout<<playerName;
                     receivedPlayers.push_back(player);
                 }
@@ -94,7 +94,6 @@ void sendconfirmation(string n)
             dataSocket.setBlocking(false);
             receivingSocket.setBlocking(false);
             serverIp = hostIp;
-            sf::IpAddress IP = "192.168.1.108";
 
             json join;
             join["name"]= n;
@@ -108,7 +107,17 @@ void sendconfirmation(string n)
             {
                 cout<<"confirmation sent"<<endl;
             }
-        
-
         }
+    json receiveData()
+    {
+        json receivedJson;
+        receivedJson["found"] = false; 
+        receivingSocket.setBlocking(false);
+        if(receivingSocket.receive(buffer,sizeof(buffer)+1,received,serverIp,senderPort)== sf::Socket::Done)
+        {   
+            receivedJson = json::parse(buffer);
+            receivedJson["found"] = true;
+        }
+        return receivedJson;
+    }
 };

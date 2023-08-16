@@ -87,7 +87,8 @@ int main(int argc, char *argv[])
     platforms.push_back(entity(1400,1200,500,300,rectplatform1));
     platforms.push_back(entity(2500,1000,500,500,sqplatform));
     platforms.push_back(entity(2270,1200,230,300,rectplatform2));
-    Player player;
+    Player soloPlayer;
+    Player *player = &soloPlayer;
     vector <Player> players;
     vector <Bullet> mybullets;
     vector <Bullet> Enemybullets;
@@ -105,7 +106,8 @@ int main(int argc, char *argv[])
     bool hitenter = false;
     bool foundgame = false;
     int i =0;
-    int walk =0;
+    int j =1;
+    int myId;
     bool once= true; 
     bool loop = false;
     Uint32 bulletstart1,bulletstart2;
@@ -114,7 +116,7 @@ int main(int argc, char *argv[])
     Server s(window);
     while (true)
     { 
-        camera.update(position(player.getframe().x,player.getframe().y));
+        
         frameStart = SDL_GetTicks();
         if (SDL_PollEvent(&windowevent))
         {
@@ -125,15 +127,15 @@ int main(int argc, char *argv[])
             if (windowevent.type == SDL_KEYDOWN)
             {
                if (windowevent.key.keysym.sym == SDLK_LEFT ||windowevent.key.keysym.sym == SDLK_a) {
-            player.moveSideways(-1);
+            (*player).moveSideways(-1);
             }
             else if (windowevent.key.keysym.sym == SDLK_RIGHT || windowevent.key.keysym.sym == SDLK_d ) {
-            player.moveSideways(1);
+            (*player).moveSideways(1);
             }
             else if (windowevent.key.keysym.sym == SDLK_UP || windowevent.key.keysym.sym == SDLK_w ) {
-            player.jump();
+            (*player).jump();
             }
-            else if(windowevent.key.keysym.sym == SDLK_RETURN && player.getlives()==0){
+            else if(windowevent.key.keysym.sym == SDLK_RETURN && (*player).getlives()==0){
                 hitenter = true;
             }   
 
@@ -172,11 +174,11 @@ int main(int argc, char *argv[])
             }
             if (windowevent.type == SDL_KEYUP) {
                 if (windowevent.key.keysym.sym == SDLK_LEFT || windowevent.key.keysym.sym == SDLK_RIGHT ||windowevent.key.keysym.sym == SDLK_a ||windowevent.key.keysym.sym == SDLK_d ) {
-            player.stopMovingSideways();
+            (*player).stopMovingSideways();
                 }
                 if (windowevent.key.keysym.sym == SDLK_UP ||windowevent.key.keysym.sym == SDLK_w )
                 {
-                    player.stopFlying();
+                    (*player).stopFlying();
                 }
         }
 
@@ -221,11 +223,11 @@ int main(int argc, char *argv[])
             window.display();
 
         }
-        else if(player.getlives()==0)
+        else if((*player).getlives()==0)
         {
             if(hitenter)
             {
-                player.refill();
+                (*player).refill();
                 hitenter = false;
             }
             window.render(bg,position(0,0));
@@ -234,6 +236,7 @@ int main(int argc, char *argv[])
         }
         else if(screen ==3)
         {   
+            camera.update(position((*player).getframe().x,(*player).getframe().y));
             SDL_ShowCursor(SDL_DISABLE);
             SDL_GetMouseState(&mouseX, &mouseY);
             if(mouseX<550) mousedirection = -1;
@@ -245,12 +248,12 @@ int main(int argc, char *argv[])
             window.render(bg3,camera.getPosition()); 
             window.render(platforms,camera.getPosition()); 
             window.render(mobs, camera.getPosition());
-            window.renderplayer(player,camera.getPosition(),walk,mousedirection,lefthold);
+            window.renderplayer(*player,camera.getPosition(),mousedirection,lefthold);
             window.render(healthbarrect,position(0,0));
             window.render(nitrobarrect,position(0,0));
             window.render(healthbar,position(0,0));
             window.render(nitrobar,position(0,0));
-            window.renderlives(player,lives);
+            window.renderlives((*player),lives);
 
             window.rendername(textInput);
 
@@ -266,9 +269,9 @@ int main(int argc, char *argv[])
             window.render(mybullets,camera.getPosition());
             // if(lefthold)
             // {
-            // window.render(weaponfire,player,mousedirection);
+            // window.render(weaponfire,(*player),mousedirection);
             // }
-            // else window.render(weapon,player,mousedirection);
+            // else window.render(weapon,(*player),mousedirection);
 
             window.render(crosshair,position(0,0));
             std::vector<Bullet> newBullets;
@@ -296,15 +299,15 @@ int main(int argc, char *argv[])
             
             
             //Mobs firing bullet part:
-            float dx = player.getpos().x- 1150;
-            float dy = player.getpos().y- 680;
+            float dx = (*player).getpos().x- 1150;
+            float dy = (*player).getpos().y- 680;
             float distance  = std::sqrt(dx * dx + dy * dy);
             if(distance<400)
             {
 
             if(SDL_GetTicks() - bulletstart2>200)
             {
-            Enemybullets.push_back(Bullet(1150,680,16,4,bulletTexture,player.getpos()));
+            Enemybullets.push_back(Bullet(1150,680,16,4,bulletTexture,(*player).getpos()));
             bulletstart2 = SDL_GetTicks();
             }
             }
@@ -316,10 +319,10 @@ int main(int argc, char *argv[])
 
 
             crosshair.update(mouseX,mouseY);
-            player.update(platforms);
+            (*player).update(platforms);
             
-            healthbar.updateHealth(player);
-            nitrobar.updatenitro(player);
+            healthbar.updateHealth((*player));
+            nitrobar.updatenitro((*player));
             window.display();
         }
         else if(screen ==4)
@@ -332,7 +335,7 @@ int main(int argc, char *argv[])
                     if(mouseY>200 && mouseY<310)
                     {
                         screen = 5;//host 
-                       
+                        myId =0;
                     }
                     if(mouseY>360 && mouseY<480)
                     {
@@ -347,13 +350,14 @@ int main(int argc, char *argv[])
         }
         else if(screen ==5)
         {   
+            //host lobby
             if(once)
             {
                 s.initialize();
                 once = false;
             }
             if(players.size()==0) {
-                players.push_back(Player(textInput));
+                players.push_back(Player(textInput,0));
             }
             json dataIn;
             bool foundInData = false;
@@ -368,23 +372,22 @@ int main(int argc, char *argv[])
             dataIn = s.incomingThread();
             foundInData = dataIn["found"].as_bool();
     
-            // graphicsThread.join();
-            // broadcastThread.join();
-            // inThread.join();
             if(foundInData)
             {   
                 cout<<"Player added";
-                players.push_back(Player(dataIn["name"].as<std::string>()));
+                players.push_back(Player(dataIn["name"].as<std::string>(),j));
+                j++;
             }
             int var = 0;
             for(Player &p: players)
             {
-            window.rendertext(p.getname(),position(90,200+var*40));
+            window.rendertext(to_string(p.getid())+". "+p.getname(),position(90,200+var*40));
             var+=1;
             }
             if(leftclick)
             {
                 screen = 8;// start game
+                once = true;
             }
             window.display();
         }
@@ -412,6 +415,7 @@ int main(int argc, char *argv[])
             c.initialize();
             c.sendconfirmation(textInput);
             screen = 7;    
+            once = true;
             }
         }
         window.display();
@@ -432,8 +436,9 @@ int main(int argc, char *argv[])
             int var = 0;
             for(Player &p: players)
             {
-            window.rendertext(p.getname(),position(90,200+var*40));
-            var+=1;
+                if(textInput == p.getname()) myId = p.getid(); 
+                window.rendertext(to_string(p.getid())+". "+p.getname(),position(90,200+var*40));
+                var+=1;
             }
             if(gamestarted)
             {
@@ -443,9 +448,20 @@ int main(int argc, char *argv[])
 
         }
         else if(screen == 8)
-        {
+        {   //server Game
+
             window.clear();
-            s.broadcastingThread(players,true);
+            if(once)
+            {
+            s.broadcastingStart(players,true);
+            for(Player &p: players)
+            {
+                p.setvalues();
+                s.sendData(p);
+                player = &players[myId];
+            }
+            once = false;
+            }
             SDL_ShowCursor(SDL_DISABLE);
             SDL_GetMouseState(&mouseX, &mouseY);
             if(mouseX<550) mousedirection = -1;
@@ -456,34 +472,49 @@ int main(int argc, char *argv[])
             window.render(bg2,camera.getPosition()); 
             window.render(bg3,camera.getPosition()); 
             window.render(platforms,camera.getPosition()); 
+            window.renderplayer(players[myId],camera.getPosition(),mousedirection,lefthold);
+            // cout<<players[0].getframe().x<<endl;
             window.render(healthbarrect,position(0,0));
             window.render(nitrobarrect,position(0,0));
             window.render(healthbar,position(0,0));
             window.render(nitrobar,position(0,0));
 
             window.rendername(textInput);
+            camera.update(position(players[myId].getframe().x,players[myId].getframe().y));
             window.display();
+            players[myId].update(platforms);
         }
         else if(screen == 9)
-        {
+        { 
+            //client game
             window.clear();
             SDL_ShowCursor(SDL_DISABLE);
             SDL_GetMouseState(&mouseX, &mouseY);
             if(mouseX<550) mousedirection = -1;
             if(mouseX>=550) mousedirection =1;
-
+            json dataIn = c.receiveData();
+            if(dataIn["found"].as_bool())
+            {
+                int id = dataIn["id"].as<int>();
+                int x = dataIn["x"].as<int>();
+                int y = dataIn["y"].as<int>();
+                players[id].setvalues(x,y);
+            }
             window.clear();
             window.render(bg,camera.getPosition()); 
             window.render(bg2,camera.getPosition()); 
             window.render(bg3,camera.getPosition()); 
             window.render(platforms,camera.getPosition());
+            window.renderplayer(players[myId],camera.getPosition(),mousedirection,lefthold);
             window.render(healthbarrect,position(0,0));
             window.render(nitrobarrect,position(0,0));
             window.render(healthbar,position(0,0));
             window.render(nitrobar,position(0,0));
 
             window.rendername(textInput);
+            camera.update(position(players[myId].getframe().x,players[myId].getframe().y));
             window.display();
+            players[myId].update(platforms);
         }
         leftclick = false;
 

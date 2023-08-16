@@ -111,5 +111,41 @@ public:
             clock.restart();
         }
         }
+    void broadcastingStart(vector<Player> players,bool st= false)
+    {
+        vector<string> playernames;
+        for(Player &p: players)
+    {
+        playernames.push_back(p.getname());
+    }
+        json dataOut;
+        dataOut["host"] = players[0].getname();
+        dataOut["Ip"] = serverIp.toString();
+        dataOut["started"] = st;
+        dataOut["players"]= json(playernames);
+        std::string jsonString;
+        
+        broadcastingSocket.setBlocking(false);
+        jsonString = dataOut.to_string();
+        if (broadcastingSocket.send(jsonString.c_str(), jsonString.size() + 1, broadcastAddress, 15000) != sf::Socket::Done)
+            {
+                cout << "error here" << endl;
+                return;
+            }
+        
+    }
+
+        void sendData(Player &p)
+        {
+            json dataOut;
+            dataOut["id"] = p.getid();
+            dataOut["x"] = p.getframe().x;
+            dataOut["y"] = p.getframe().y;
+            string data = dataOut.to_string();
+            if(broadcastingSocket.send(data.c_str(),data.size()+1,broadcastAddress,15000) !=sf::Socket::Done)
+            {
+                cout<<"error";
+            }
+        }
 }
 ;

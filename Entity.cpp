@@ -15,6 +15,7 @@ class entity
     bool isFlying = false;
     bool isMovingSideways = false;
     int movementDirection = 0;
+    entity(){}
         entity(float px, float py,float pw, float ph)
     {
         //pos.x = px;
@@ -23,6 +24,13 @@ class entity
         currentframe.y = py;
         currentframe.w=pw;
         currentframe.h =ph ;
+    }
+    void setval(float px, float py)
+    {
+        currentframe.x = px;
+        currentframe.y = py;
+        currentframe.w = 75;
+        currentframe.h = 100;
     }
     entity(float px, float py,float pw, float ph, SDL_Texture* t)
     {
