@@ -9,7 +9,7 @@ using jsoncons::json;
 using namespace std;
 #include "position.cpp"
 #include "Entity.cpp"
-#include "Player.cpp"
+#include "player.cpp"
 #include "camera.cpp"
 #include "mob.cpp"
 #include "Bullet.cpp"
