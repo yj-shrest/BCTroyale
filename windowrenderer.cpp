@@ -12,13 +12,26 @@ class renderwindow
     private:
     SDL_Window *window;
     SDL_Renderer *renderer;
-    SDL_Texture *texture;
+    SDL_Texture *playertexture;
+    SDL_Texture *playerflyingtexture;
+    SDL_Texture *playerwtexture; 
+    SDL_Texture *weapontexture ;
+    SDL_Texture *weaponfiretexture ;
+    SDL_Texture *healthBarRectTexture;
+    SDL_Texture *healthBarTexture;
     public:
     renderwindow(const char* t, int w, int h)
     {
         char* title = const_cast<char*>(t);
         window = SDL_CreateWindow(title,SDL_WINDOWPOS_UNDEFINED,SDL_WINDOWPOS_UNDEFINED,w,h,SDL_WINDOW_ALLOW_HIGHDPI);
         renderer = SDL_CreateRenderer(window,-1, SDL_RENDERER_ACCELERATED && SDL_RENDERER_PRESENTVSYNC);
+        playertexture = loadTexture("assets/char.png");
+        playerflyingtexture =loadTexture("assets/charnitro.png");
+        playerwtexture = loadTexture("assets/charw.png");
+        weapontexture = loadTexture("assets/weapon.png");
+        weaponfiretexture = loadTexture("assets/weaponfire.png");
+        healthBarRectTexture = loadTexture("assets/healthbarrect.png");
+        healthBarTexture = loadTexture("assets/healthbar.png");
     }
     void cleanup()
     {
@@ -51,13 +64,9 @@ class renderwindow
             SDL_RenderCopyEx(renderer,ent.getTxt(), NULL, &dst, 0, NULL, SDL_FLIP_HORIZONTAL);
         }
     }
-    void renderplayer(Player &p,position camerapos,int direction =1,bool firing=false)
+    void renderplayer(Player &p,position camerapos,int direction =1)
     {
-        SDL_Texture *playertexture = loadTexture("assets/char.png");
-        SDL_Texture *playerflyingtexture =loadTexture("assets/charnitro.png");
-        SDL_Texture *playerwtexture = loadTexture("assets/charw.png");
-        SDL_Texture *weapontexture = loadTexture("assets/weapon.png");
-        SDL_Texture *weaponfiretexture = loadTexture("assets/weaponfire.png");
+        
         SDL_Rect dst;
         SDL_Texture *t;
         dst.x=p.getframe().x - camerapos.x;
@@ -96,19 +105,14 @@ class renderwindow
             SDL_RenderCopyEx(renderer,t, NULL, &dst, 0, NULL, SDL_FLIP_HORIZONTAL);
     }
     //Rendering the weapon
-    int mouseX, mouseY;
-    SDL_GetMouseState(&mouseX, &mouseY);
     SDL_Rect dst2;
     dst2.x = dst.x+15;
     dst2.y = dst.y+55;
     dst2.w = p.getweaponsize().x;
     dst2.h = p.getweaponsize().y;
-    double deltaX = mouseX - dst2.x;
-    double deltaY = mouseY - dst2.y;
-    double angleRadians = atan2(deltaY, deltaX);
-    double angleDegrees = angleRadians * (180.0 / M_PI);
+    double angleDegrees = p.theta * (180.0 / M_PI);
     SDL_Texture * wt;
-    if(firing) 
+    if(p.firing) 
     {
         wt = weaponfiretexture;
         dst2.w+=20;
@@ -119,6 +123,20 @@ class renderwindow
     SDL_RenderCopyEx(renderer, wt, NULL, &dst2, angleDegrees, &center, SDL_FLIP_VERTICAL);
     else
     SDL_RenderCopyEx(renderer, wt, NULL, &dst2, angleDegrees, &center, SDL_FLIP_NONE);
+    ///rendering the name
+    TTF_Font* font = TTF_OpenFont("assets/RichuMastRegular.ttf", 40);
+    string textInput =p.getname();
+    SDL_Color textColor = { 27, 20, 100, 100 };
+    SDL_Surface* textSurface = TTF_RenderText_Solid(font, textInput.c_str(), textColor);
+    SDL_Texture* textTexture = SDL_CreateTextureFromSurface(renderer, textSurface);
+    SDL_Rect dst3;
+    dst3.x = dst.x - textInput.length()*10+40;
+    dst3.y = dst.y - 50;
+    dst3.w = textInput.length()*20;
+    dst3.h = 40;
+
+    SDL_RenderCopy(renderer, textTexture, NULL, &dst3);
+
     }
     void render(std::vector<entity>& entities,position camerapos) {
     SDL_Rect dst;
@@ -129,6 +147,7 @@ class renderwindow
         dst.h = e.getframe().h;
         SDL_RenderCopy(renderer, e.getTxt(),NULL, &dst);
     }
+
     }
     void render(std::vector<mob>& entities,position camerapos) {
     SDL_Rect dst;

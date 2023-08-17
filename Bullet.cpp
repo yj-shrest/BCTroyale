@@ -80,17 +80,31 @@ class Bullet : public entity
     }
     bool hit(std::vector<mob>& mobs)
     {
-        for (mob& m : mobs)
+        for (mob& e : mobs)
         {
-            if(m.getframe().y<getframe().y+getframe().h && m.getframe().y+m.getframe().h>getframe().y)
+            if(e.getframe().y<getframe().y+getframe().h && e.getframe().y+e.getframe().h>getframe().y)
             {
 
-                if ( m.getframe().x+5<getframe().x+getframe().w && getframe().x<(m.getframe().x+m.getframe().w-5) )
+                if ( e.getframe().x+5<getframe().x+getframe().w && getframe().x<(e.getframe().x+e.getframe().w-5) )
                 {
                 return true;
                 }
             }
         }
+        
+        return false;
+    }
+    bool hit(entity e)
+    {
+        
+            if(e.getframe().y<getframe().y+getframe().h && e.getframe().y+e.getframe().h>getframe().y)
+            {
+
+                if ( e.getframe().x+5<getframe().x+getframe().w && getframe().x<(e.getframe().x+e.getframe().w-5) )
+                {
+                return true;
+                }
+            }
         
         return false;
     }
@@ -121,3 +135,18 @@ bool mob::hit(std::vector<Bullet>& bullets)
         
         return false;
     }
+bool Player::hit(Bullet &b)
+    {
+        
+    if(b.getframe().y<getframe().y+getframe().h && b.getframe().y+b.getframe().h>getframe().y)
+        {
+
+            if ( b.getframe().x+5<getframe().x+getframe().w && getframe().x<(b.getframe().x+b.getframe().w-5) )
+                {
+                return true;
+                }
+        }
+        
+        return false;
+    }
+

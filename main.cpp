@@ -249,7 +249,8 @@ int main(int argc, char *argv[])
             window.render(bg3,camera.getPosition()); 
             window.render(platforms,camera.getPosition()); 
             window.render(mobs, camera.getPosition());
-            window.renderplayer(*player,camera.getPosition(),mousedirection,lefthold);
+            player->theta = Bullet::gettheta(mouseX,mouseY);
+            window.renderplayer(*player,camera.getPosition(),mousedirection);
             window.render(healthbarrect,position(0,0));
             window.render(nitrobarrect,position(0,0));
             window.render(healthbar,position(0,0));
@@ -476,14 +477,24 @@ int main(int argc, char *argv[])
                 int dir = receivedData["dir"].as<int>();
                 bool isfiring = receivedData["isfiring"].as_bool();
                 float theta = receivedData["theta"].as<float>();
-                player[id].updatePosition(x,y,dir);
+                player[id].updatePosition(x,y,dir,theta,isfiring);
                 if(isfiring)
                 {
                     if(SDL_GetTicks() - bulletstart2>100)
                     {
                         position pos = position(players[id].getframe().x-width/2 , players[id].getframe().y-height/2);
-                        mybullets.push_back(Bullet(575,420,16,4,bulletTexture,theta,pos));
+                        Enemybullets.push_back(Bullet(575,420,16,4,bulletTexture,theta,pos));
                         bulletstart2 = SDL_GetTicks();
+                    }
+                }
+            }
+            else
+            {
+                for(Player &p: players)
+                {
+                    if(p.getid() !=myId)
+                    {
+                        p.firing = false;
                     }
                 }
             }
@@ -503,24 +514,65 @@ int main(int argc, char *argv[])
                 }
             }
             std::vector<Bullet> newBullets;
+            std::vector<Bullet> newEnemyBullets;
 
             for (Bullet& b : mybullets) {
                 b.update();
-                if (!b.hit(platforms) ) {
+                if (!b.hit(platforms) && b.isinrange()) {
                     newBullets.push_back(b);
                 }   
             }
             mybullets = std::move(newBullets);
+            newBullets.clear();
+            for (Bullet& b : Enemybullets) {
+                b.update();
+                if (!b.hit(platforms) && b.isinrange()) {
+                    newEnemyBullets.push_back(b);
+                }   
+            }
+            Enemybullets = std::move(newEnemyBullets);
+            newEnemyBullets.clear();
             window.clear();
             window.render(bg,camera.getPosition()); 
             window.render(bg2,camera.getPosition()); 
             window.render(bg3,camera.getPosition()); 
             window.render(mybullets,camera.getPosition());
+            window.render(Enemybullets,camera.getPosition());
             window.render(platforms,camera.getPosition()); 
             window.render(crosshair,position(0,0));
+            players[myId].dir =mousedirection; 
+            players[myId].theta =Bullet::gettheta(mouseX,mouseY); 
+            players[myId].firing =lefthold; 
+            for(Bullet &b :Enemybullets)
+            {
+            if(players[myId].hit(b))
+            {
+                players[myId].updateHealth();
+                //cout<<players[myId].gethealth()<<endl;
+            }
+            else
+            {
+                newEnemyBullets.push_back(b);
+            }
+            }
+            Enemybullets = std::move(newEnemyBullets);
+            for(Bullet &b :mybullets)
+            {
+                for(Player &p : players)
+                {
+                    if(p.getid()!=myId)
+                    {
+                        if(!b.hit(p))
+                        {
+                            newBullets.push_back(b);
+                        }
+                    }
+                }
+            }
+            mybullets = std::move(newBullets);
             for(Player &p : players)
             {
-            window.renderplayer(p,camera.getPosition(),p.dir,lefthold);
+            window.renderplayer(p,camera.getPosition(),p.dir);
             }
             // cout<<players[0].getframe().x<<endl;
             window.render(healthbarrect,position(0,0));
@@ -528,13 +580,14 @@ int main(int argc, char *argv[])
             window.render(healthbar,position(0,0));
             window.render(nitrobar,position(0,0));
 
-            window.rendername(textInput);
+            //window.rendername(textInput);
             window.display();
             for(Player &p: players)
             {
             p.update(platforms);
             }
             crosshair.update(mouseX,mouseY);
+            healthbar.updateHealth((players[myId]));
             camera.update(position(players[myId].getframe().x,players[myId].getframe().y));
             if(players[myId].isFlying || players[myId].isMovingSideways || lefthold)
             {
@@ -579,16 +632,26 @@ int main(int argc, char *argv[])
                 float theta = receivedData["theta"].as<float>();
                 if(id!=myId)
                 {
-                players[id].updatePosition(x,y,dir);
+                players[id].updatePosition(x,y,dir,theta,isfiring);
                 if(isfiring)
                 {
                     if(SDL_GetTicks() - bulletstart2>100)
                     {
                         position pos = position(players[id].getframe().x-width/2 , players[id].getframe().y-height/2);
-                        mybullets.push_back(Bullet(575,420,16,4,bulletTexture,theta,pos));
+                        Enemybullets.push_back(Bullet(575,420,16,4,bulletTexture,theta,pos));
                         bulletstart2 = SDL_GetTicks();
                     }
                 }
+                }
+            }
+            else
+            {
+                for(Player &p: players)
+                {
+                    if(p.getid() !=myId)
+                    {
+                        p.firing = false;
+                    }
                 }
             }
             }
@@ -604,33 +667,74 @@ int main(int argc, char *argv[])
             }
 
             std::vector<Bullet> newBullets;
+            std::vector<Bullet> newEnemyBullets;
 
             for (Bullet& b : mybullets) {
                 b.update();
-                if (!b.hit(platforms) && b.isinrange() &&!b.hit(mobs)) {
+                if (!b.hit(platforms) && b.isinrange() ) {
                     newBullets.push_back(b);
                 }   
             }
             mybullets = std::move(newBullets);
-
+            newBullets.clear();
+            for (Bullet& b : Enemybullets) {
+                b.update();
+                if (!b.hit(platforms) && b.isinrange() ) {
+                    newEnemyBullets.push_back(b);
+                }   
+            }
+            Enemybullets = std::move(newEnemyBullets);
+            newEnemyBullets.clear();
             window.clear();
             window.render(bg,camera.getPosition()); 
             window.render(bg2,camera.getPosition()); 
             window.render(bg3,camera.getPosition()); 
             window.render(platforms,camera.getPosition());
+            players[myId].dir =mousedirection; 
+            players[myId].theta =Bullet::gettheta(mouseX,mouseY); 
+            players[myId].firing =lefthold; 
+            for(Bullet &b :Enemybullets)
+            {
+            if(players[myId].hit(b))
+            {
+                players[myId].updateHealth();
+                //cout<<players[myId].gethealth()<<endl;
+            }
+            else
+            {
+                newEnemyBullets.push_back(b);
+            }
+            }
+            Enemybullets = std::move(newEnemyBullets);
+            for(Bullet &b :mybullets)
+            {
+                for(Player &p : players)
+                {
+                    if(p.getid() !=myId)
+                    {
+                        if(!b.hit(p))
+                        {
+                            newBullets.push_back(b);
+                        }
+                    }
+                }
+            }
+            mybullets = std::move(newBullets);
             for(Player &p : players)
             {
-            window.renderplayer(p,camera.getPosition(),p.dir,lefthold);
+            window.renderplayer(p,camera.getPosition(),p.dir);
             }
             window.render(mybullets,camera.getPosition());
+            window.render(Enemybullets,camera.getPosition());
 
             window.render(healthbarrect,position(0,0));
             window.render(nitrobarrect,position(0,0));
             window.render(healthbar,position(0,0));
             window.render(nitrobar,position(0,0));
             window.render(crosshair,position(0,0));
-            window.rendername(textInput);
+            //window.rendername(textInput);
             window.display();
+            healthbar.updateHealth((players[myId]));
             crosshair.update(mouseX,mouseY);
             for(Player &p: players)
             {

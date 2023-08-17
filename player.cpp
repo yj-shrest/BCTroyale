@@ -1,6 +1,7 @@
 #pragma once
 
 #include<random>
+class Bullet;
 class Player: public entity
 {   private:
     const int maxhealth=100; 
@@ -12,7 +13,9 @@ class Player: public entity
     int id;
     string name;
     public:
+    float theta;
     int dir;
+    bool firing;
     Uint32 lastAnimationUpdateTime = 0;
 
     Player(string n,int i)
@@ -115,6 +118,15 @@ class Player: public entity
         isFlying = false;
     }
 
+
+    bool hit(Bullet &b);
+    void updateHealth()
+    {
+        health -=2;
+    }
+
+
+
     bool isOnGround(std::vector<entity>& entities)
     {
         for (entity& e : entities)
@@ -171,11 +183,13 @@ class Player: public entity
         }
         return false;
     }
-    void updatePosition(int x, int y,int d)
+    void updatePosition(int x, int y,int d,float t,bool fi)
     {
         getframe().x = x;
         getframe().y = y;
         dir = d;
+        theta =t;
+        firing = fi;
     }
     void update(std::vector<entity>& entities) {
         

@@ -132,7 +132,7 @@ void sendconfirmation(string n)
         }
         return receivedJson;
     }
-    void sendData(Player &p,int dir,bool isfiring,float theta)
+    void sendData(Player &p,int dir,bool isfiring,float theta=0)
         {
             json dataOut;
             dataOut["id"] = p.getid();
