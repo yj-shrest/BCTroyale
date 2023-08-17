@@ -23,7 +23,15 @@ class Bullet : public entity
     mousey = my+cpos.y;
     increment = 20;
     theta = atan2(my-py,mx-px);
-    cout<<theta<<endl;
+    initialpos = position(px,py);
+    range = 400;
+}
+    Bullet(int  px, int py,int  pw, int ph, SDL_Texture*t, float th, position cpos):entity(px+cpos.x,py+cpos.y,pw,ph,t)
+{   
+    frameposx =px;
+    frameposy = py;
+    theta =th;
+    increment = 20;
     initialpos = position(px,py);
     range = 400;
 }
@@ -35,15 +43,6 @@ class Bullet : public entity
         range = 400;
         theta = atan2(initialpos.y-py,initialpos.x-px);
     }
-    Bullet(int  px, int py,int  pw, int ph, SDL_Texture* t,float th, position cpos):entity(px+cpos.x,py+cpos.y,pw,ph,t)
-{   
-    frameposx = px;
-    frameposy = py;
-    increment = 20;
-    theta = th;
-    initialpos = position(px,py);
-    range = 400;
-}
     void update()
     {   
         frameposx += increment*cos(theta);
@@ -58,6 +57,10 @@ class Bullet : public entity
     float gettheta()
     {
         return theta;
+    }
+    static float gettheta(int mouseX, int mouseY)
+    {
+        return atan2(mouseY-420,mouseX-575);
     }
     bool hit(std::vector<entity>& platforms)
     {
@@ -99,12 +102,8 @@ class Bullet : public entity
         if(distance < range) return true;
         else return false;
     }
-        static float mouseangle(Player &p,int mouseX, int mouseY)
-    {
-        float t = atan2(mouseY-420,mouseX-575);
-        //cout<<t;
-        return t;
-    }
+    
+    
 };
 bool mob::hit(std::vector<Bullet>& bullets)
     {

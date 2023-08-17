@@ -64,6 +64,7 @@ public:
                 }
                 return receivedPlayers;
             }
+            gs = false;
             return receivedPlayers;
     }
     bool scanningThread()
@@ -92,7 +93,6 @@ void sendconfirmation(string n)
 
     {
             dataSocket.setBlocking(false);
-            receivingSocket.setBlocking(false);
             serverIp = hostIp;
 
             json join;

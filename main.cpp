@@ -366,7 +366,6 @@ int main(int argc, char *argv[])
             window.clear();
             window.render(bg,position(0,0));
             window.render(lobbyScreen,position(0,0));
-            SDL_Delay(16);
                         
             s.broadcastingThread(players);
             
@@ -403,21 +402,18 @@ int main(int argc, char *argv[])
             
             window.clear();
             window.render(bg,position(0,0));
-            SDL_Delay(16);
-                
             foundgame = c.scanningThread();
          if(foundgame)
         {
             window.render(joinbutton,position(0,0));
             if(leftclick)   
             {      
-            c.initialize();
             c.sendconfirmation(textInput);
             screen = 7;    
             once = true;
             }
         }
-        window.display();
+            window.display();
         }
         else if(screen ==7)
         {
@@ -434,6 +430,9 @@ int main(int argc, char *argv[])
                 players.push_back(p);
             }
             int var = 0;
+            if(players.size()!=0)
+            {
+
             for(Player &p: players)
             {
                 if(textInput == p.getname()) 
@@ -443,6 +442,7 @@ int main(int argc, char *argv[])
                 }
                 window.rendertext(to_string(p.getid())+". "+p.getname(),position(90,200+var*40));
                 var+=1;
+            }
             }
             if(gamestarted)
             {
@@ -479,13 +479,12 @@ int main(int argc, char *argv[])
                 player[id].updatePosition(x,y,dir);
                 if(isfiring)
                 {
-                    if(SDL_GetTicks() -  bulletstart1 >100)
-                {
-                    //cout<<theta<<endl;
-                    position pos = position (players[id].getframe().x - width/2, players[id].getframe().y - height/2);
-                    mybullets.push_back(Bullet(575,420,16,4,bulletTexture,theta,pos));
-                    bulletstart1 = SDL_GetTicks();
-                }
+                    if(SDL_GetTicks() - bulletstart2>100)
+                    {
+                        position pos = position(players[id].getframe().x-width/2 , players[id].getframe().y-height/2);
+                        mybullets.push_back(Bullet(575,420,16,4,bulletTexture,theta,pos));
+                        bulletstart2 = SDL_GetTicks();
+                    }
                 }
             }
             SDL_ShowCursor(SDL_DISABLE);
@@ -498,16 +497,16 @@ int main(int argc, char *argv[])
                 if(SDL_GetTicks() -  bulletstart1 >100)
                 {
                 position pos = position (players[myId].getframe().x - width/2, players[myId].getframe().y - height/2);
+              
                mybullets.push_back(Bullet(575,420,16,4,bulletTexture,mouseX,mouseY,pos));
                bulletstart1 = SDL_GetTicks();
                 }
             }
-
             std::vector<Bullet> newBullets;
 
             for (Bullet& b : mybullets) {
                 b.update();
-                if (!b.hit(platforms) && b.isinrange()) {
+                if (!b.hit(platforms) ) {
                     newBullets.push_back(b);
                 }   
             }
@@ -539,7 +538,7 @@ int main(int argc, char *argv[])
             camera.update(position(players[myId].getframe().x,players[myId].getframe().y));
             if(players[myId].isFlying || players[myId].isMovingSideways || lefthold)
             {
-            s.sendData(players[myId],mousedirection,lefthold,lefthold?Bullet::mouseangle(players[myId],mouseX,mouseY):0);
+            s.sendData(players[myId],mousedirection,lefthold,Bullet::gettheta(mouseX,mouseY));
             }
             
         }
@@ -573,23 +572,22 @@ int main(int argc, char *argv[])
             if(receivedData["found"].as_bool())
             {
                 int id = receivedData["id"].as<int>();
-                if(id!=myId)
-                {
                 int x = receivedData["x"].as<int>();
                 int y = receivedData["y"].as<int>();
                 int dir = receivedData["dir"].as<int>();
                 bool isfiring = receivedData["isfiring"].as_bool();
                 float theta = receivedData["theta"].as<float>();
-                player[id].updatePosition(x,y,dir);
+                if(id!=myId)
+                {
+                players[id].updatePosition(x,y,dir);
                 if(isfiring)
                 {
-                    if(SDL_GetTicks() -  bulletstart1 >100)
-                {
-                    //cout<<theta<<endl;
-                    position pos = position (players[id].getframe().x - width/2, players[id].getframe().y - height/2);
-                    mybullets.push_back(Bullet(575,420,16,4,bulletTexture,theta,pos));
-                    bulletstart1 = SDL_GetTicks();
-                }
+                    if(SDL_GetTicks() - bulletstart2>100)
+                    {
+                        position pos = position(players[id].getframe().x-width/2 , players[id].getframe().y-height/2);
+                        mybullets.push_back(Bullet(575,420,16,4,bulletTexture,theta,pos));
+                        bulletstart2 = SDL_GetTicks();
+                    }
                 }
                 }
             }
@@ -609,7 +607,7 @@ int main(int argc, char *argv[])
 
             for (Bullet& b : mybullets) {
                 b.update();
-                if (!b.hit(platforms) && b.isinrange()) {
+                if (!b.hit(platforms) && b.isinrange() &&!b.hit(mobs)) {
                     newBullets.push_back(b);
                 }   
             }
@@ -641,18 +639,17 @@ int main(int argc, char *argv[])
             camera.update(position(players[myId].getframe().x,players[myId].getframe().y));
             if(players[myId].isFlying || players[myId].isMovingSideways || lefthold)
             {
-            c.sendData(players[myId],mousedirection,lefthold,lefthold?Bullet::mouseangle(players[myId],mouseX,mouseY):0);
+            c.sendData(players[myId],mousedirection,lefthold,Bullet::gettheta(mouseX,mouseY));
             }
 
         }
         leftclick = false;
-
-
         frameTime = SDL_GetTicks() - frameStart;
 
         if (frameDelay > frameTime) {
         SDL_Delay(frameDelay - frameTime);
         }
+        //cout<<"End of a loop";
     }
     window.cleanup();
     SDL_ShowCursor(SDL_ENABLE);

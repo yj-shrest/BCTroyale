@@ -1,7 +1,3 @@
-#pragma once
-
-//#include "Player.cpp"
-class Player;
 class position
 {
     public:
