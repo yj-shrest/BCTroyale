@@ -481,7 +481,7 @@ int main(int argc, char *argv[])
                 {
                     if(SDL_GetTicks() -  bulletstart1 >100)
                 {
-                    cout<<theta<<endl;
+                    //cout<<theta<<endl;
                     position pos = position (players[id].getframe().x - width/2, players[id].getframe().y - height/2);
                     mybullets.push_back(Bullet(575,420,16,4,bulletTexture,theta,pos));
                     bulletstart1 = SDL_GetTicks();
@@ -585,7 +585,7 @@ int main(int argc, char *argv[])
                 {
                     if(SDL_GetTicks() -  bulletstart1 >100)
                 {
-                    cout<<theta<<endl;
+                    //cout<<theta<<endl;
                     position pos = position (players[id].getframe().x - width/2, players[id].getframe().y - height/2);
                     mybullets.push_back(Bullet(575,420,16,4,bulletTexture,theta,pos));
                     bulletstart1 = SDL_GetTicks();

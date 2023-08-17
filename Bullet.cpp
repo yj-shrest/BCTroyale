@@ -102,7 +102,7 @@ class Bullet : public entity
         static float mouseangle(Player &p,int mouseX, int mouseY)
     {
         float t = atan2(mouseY-420,mouseX-575);
-        cout<<t;
+        //cout<<t;
         return t;
     }
 };
