@@ -454,6 +454,7 @@ int main(int argc, char *argv[])
         else if(screen == 8)
         {   //server Game
 
+
             window.clear();
             if(once)
             {
@@ -480,10 +481,30 @@ int main(int argc, char *argv[])
             if(mouseX<550) mousedirection = -1;
             if(mouseX>=550) mousedirection =1;
 
+            if(lefthold)
+            {
+                if(SDL_GetTicks() -  bulletstart1 >100)
+                {
+                position pos = position (players[myId].getframe().x - width/2, players[myId].getframe().y - height/2);
+               mybullets.push_back(Bullet(575,420,16,4,bulletTexture,mouseX,mouseY,pos));
+               bulletstart1 = SDL_GetTicks();
+                }
+            }
+
+            std::vector<Bullet> newBullets;
+
+            for (Bullet& b : mybullets) {
+                b.update();
+                if (!b.hit(platforms) && b.isinrange() &&!b.hit(mobs)) {
+                    newBullets.push_back(b);
+                }   
+            }
+            mybullets = std::move(newBullets);
             window.clear();
             window.render(bg,camera.getPosition()); 
             window.render(bg2,camera.getPosition()); 
             window.render(bg3,camera.getPosition()); 
+            window.render(mybullets,camera.getPosition());
             window.render(platforms,camera.getPosition()); 
             window.render(crosshair,position(0,0));
             for(Player &p : players)
@@ -498,10 +519,13 @@ int main(int argc, char *argv[])
 
             window.rendername(textInput);
             window.display();
-            players[myId].update(platforms);
+            for(Player &p: players)
+            {
+            p.update(platforms);
+            }
             crosshair.update(mouseX,mouseY);
             camera.update(position(players[myId].getframe().x,players[myId].getframe().y));
-            if(!players[myId].isOnGround(platforms) || players[myId].isMovingSideways)
+            if(players[myId].isFlying || players[myId].isMovingSideways)
             {
             s.sendData(players[myId],mousedirection);
             }
@@ -547,6 +571,26 @@ int main(int argc, char *argv[])
             }
             }
             
+            if(lefthold)
+            {
+                if(SDL_GetTicks() -  bulletstart1 >100)
+                {
+                position pos = position (players[myId].getframe().x - width/2, players[myId].getframe().y - height/2);
+               mybullets.push_back(Bullet(575,420,16,4,bulletTexture,mouseX,mouseY,pos));
+               bulletstart1 = SDL_GetTicks();
+                }
+            }
+
+            std::vector<Bullet> newBullets;
+
+            for (Bullet& b : mybullets) {
+                b.update();
+                if (!b.hit(platforms) && b.isinrange() &&!b.hit(mobs)) {
+                    newBullets.push_back(b);
+                }   
+            }
+            mybullets = std::move(newBullets);
+
             window.clear();
             window.render(bg,camera.getPosition()); 
             window.render(bg2,camera.getPosition()); 
@@ -556,6 +600,8 @@ int main(int argc, char *argv[])
             {
             window.renderplayer(p,camera.getPosition(),p.dir,lefthold);
             }
+            window.render(mybullets,camera.getPosition());
+
             window.render(healthbarrect,position(0,0));
             window.render(nitrobarrect,position(0,0));
             window.render(healthbar,position(0,0));
@@ -564,12 +610,16 @@ int main(int argc, char *argv[])
             window.rendername(textInput);
             window.display();
             crosshair.update(mouseX,mouseY);
-            players[myId].update(platforms);
+            for(Player &p: players)
+            {
+            p.update(platforms);
+            }
             camera.update(position(players[myId].getframe().x,players[myId].getframe().y));
-            if(!players[myId].isOnGround(platforms) || players[myId].isMovingSideways)
+            if(players[myId].isFlying || players[myId].isMovingSideways)
             {
             c.sendData(players[myId],mousedirection);
             }
+
         }
         leftclick = false;
 
