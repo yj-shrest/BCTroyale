@@ -474,7 +474,19 @@ int main(int argc, char *argv[])
                 int x = receivedData["x"].as<int>();
                 int y = receivedData["y"].as<int>();
                 int dir = receivedData["dir"].as<int>();
+                bool isfiring = receivedData["isfiring"].as_bool();
+                float theta = receivedData["theta"].as<float>();
                 player[id].updatePosition(x,y,dir);
+                if(isfiring)
+                {
+                    if(SDL_GetTicks() -  bulletstart1 >100)
+                {
+                    cout<<theta<<endl;
+                    position pos = position (players[id].getframe().x - width/2, players[id].getframe().y - height/2);
+                    mybullets.push_back(Bullet(575,420,16,4,bulletTexture,theta,pos));
+                    bulletstart1 = SDL_GetTicks();
+                }
+                }
             }
             SDL_ShowCursor(SDL_DISABLE);
             SDL_GetMouseState(&mouseX, &mouseY);
@@ -495,7 +507,7 @@ int main(int argc, char *argv[])
 
             for (Bullet& b : mybullets) {
                 b.update();
-                if (!b.hit(platforms) && b.isinrange() &&!b.hit(mobs)) {
+                if (!b.hit(platforms) && b.isinrange()) {
                     newBullets.push_back(b);
                 }   
             }
@@ -525,9 +537,9 @@ int main(int argc, char *argv[])
             }
             crosshair.update(mouseX,mouseY);
             camera.update(position(players[myId].getframe().x,players[myId].getframe().y));
-            if(players[myId].isFlying || players[myId].isMovingSideways)
+            if(players[myId].isFlying || players[myId].isMovingSideways || lefthold)
             {
-            s.sendData(players[myId],mousedirection);
+            s.sendData(players[myId],mousedirection,lefthold,lefthold?Bullet::mouseangle(players[myId],mouseX,mouseY):0);
             }
             
         }
@@ -561,12 +573,24 @@ int main(int argc, char *argv[])
             if(receivedData["found"].as_bool())
             {
                 int id = receivedData["id"].as<int>();
+                if(id!=myId)
+                {
                 int x = receivedData["x"].as<int>();
                 int y = receivedData["y"].as<int>();
                 int dir = receivedData["dir"].as<int>();
-                if(id!=myId)
+                bool isfiring = receivedData["isfiring"].as_bool();
+                float theta = receivedData["theta"].as<float>();
+                player[id].updatePosition(x,y,dir);
+                if(isfiring)
                 {
-                players[id].updatePosition(x,y,dir);
+                    if(SDL_GetTicks() -  bulletstart1 >100)
+                {
+                    cout<<theta<<endl;
+                    position pos = position (players[id].getframe().x - width/2, players[id].getframe().y - height/2);
+                    mybullets.push_back(Bullet(575,420,16,4,bulletTexture,theta,pos));
+                    bulletstart1 = SDL_GetTicks();
+                }
+                }
                 }
             }
             }
@@ -585,7 +609,7 @@ int main(int argc, char *argv[])
 
             for (Bullet& b : mybullets) {
                 b.update();
-                if (!b.hit(platforms) && b.isinrange() &&!b.hit(mobs)) {
+                if (!b.hit(platforms) && b.isinrange()) {
                     newBullets.push_back(b);
                 }   
             }
@@ -615,9 +639,9 @@ int main(int argc, char *argv[])
             p.update(platforms);
             }
             camera.update(position(players[myId].getframe().x,players[myId].getframe().y));
-            if(players[myId].isFlying || players[myId].isMovingSideways)
+            if(players[myId].isFlying || players[myId].isMovingSideways || lefthold)
             {
-            c.sendData(players[myId],mousedirection);
+            c.sendData(players[myId],mousedirection,lefthold,lefthold?Bullet::mouseangle(players[myId],mouseX,mouseY):0);
             }
 
         }
