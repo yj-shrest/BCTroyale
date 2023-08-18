@@ -110,7 +110,9 @@ int main(int argc, char *argv[])
     int myId;
     bool once= true; 
     bool loop = false;
-    Uint32 bulletstart1,bulletstart2;
+    Uint32 bulletstart1,bulletstart2,sendDatatime,respawnTime;
+    int secondspassed=0;
+    int playersalive;
     bool gamestarted;
     Client c(window);
     Server s(window);
@@ -224,7 +226,9 @@ int main(int argc, char *argv[])
             window.display();
 
         }
-        else if((*player).getlives()==0)
+        else if(screen ==3)
+        {   
+        if((*player).getlives()==0)
         {
             if(hitenter)
             {
@@ -235,8 +239,8 @@ int main(int argc, char *argv[])
             window.render(gameOverScreen,position(0,0));
             window.display();
         }
-        else if(screen ==3)
-        {   
+        else{
+
             camera.update(position((*player).getframe().x,(*player).getframe().y));
             SDL_ShowCursor(SDL_DISABLE);
             SDL_GetMouseState(&mouseX, &mouseY);
@@ -326,6 +330,7 @@ int main(int argc, char *argv[])
             healthbar.updateHealth((*player));
             nitrobar.updatenitro((*player));
             window.display();
+        }
         }
         else if(screen ==4)
         {
@@ -454,9 +459,39 @@ int main(int argc, char *argv[])
         }
         else if(screen == 8)
         {   //server Game
-
-
             window.clear();
+        
+            if(players[myId].respawning &&!players[myId].died)
+            {   
+                
+                if(SDL_GetTicks()-respawnTime >1000)
+                {
+                    secondspassed+=1; 
+                    respawnTime = SDL_GetTicks();
+                }
+                
+                window.render(bg,position(0,0));
+                int remaintime = 6-secondspassed;
+                string remaintimestr = to_string(remaintime); 
+                window.rendertext("Respawning in",position(400,300));
+                window.rendertext(remaintimestr,position(550,350));
+                window.display();
+                if(remaintime==0)
+                {
+                    players[myId].respawning = false;
+                    secondspassed =0;
+                }
+            }
+            else if(playersalive ==1 && !players[myId].died)
+            {
+                window.clear();
+                window.render(bg,position(0,0));
+                window.rendertext("Victory",position(500,300));
+                window.display();
+                s.sendData(players[myId],mousedirection,true,0,true);
+            }
+            else{
+
             if(once)
             {
             s.broadcastingStart(players,true);
@@ -476,9 +511,14 @@ int main(int argc, char *argv[])
                 int y = receivedData["y"].as<int>();
                 int dir = receivedData["dir"].as<int>();
                 bool isfiring = receivedData["isfiring"].as_bool();
+                bool isflying = receivedData["flying"].as_bool();
+                bool respawning = receivedData["respawning"].as_bool();
+                bool died = receivedData["died"].as_bool();
                 float theta = receivedData["theta"].as<float>();
-                player[id].updatePosition(x,y,dir,theta,isfiring);
-                if(isfiring)
+                bool gameover = receivedData["gameover"].as_bool();
+                if(gameover) screen =10;
+                player[id].updatePosition(x,y,dir,theta,isfiring,isflying,respawning,died);
+                if(isfiring && !players[id].respawning)
                 {
                     if(SDL_GetTicks() - bulletstart2>100)
                     {
@@ -495,6 +535,7 @@ int main(int argc, char *argv[])
                     if(p.getid() !=myId)
                     {
                         p.firing = false;
+                        p.flying = false;
                     }
                 }
             }
@@ -503,7 +544,7 @@ int main(int argc, char *argv[])
             if(mouseX<550) mousedirection = -1;
             if(mouseX>=550) mousedirection =1;
 
-            if(lefthold)
+            if(lefthold && !players[myId].respawning)
             {
                 if(SDL_GetTicks() -  bulletstart1 >100)
                 {
@@ -518,11 +559,14 @@ int main(int argc, char *argv[])
 
             for (Bullet& b : mybullets) {
                 b.update();
+                //cout<<b.hit(platforms)<<endl;
                 if (!b.hit(platforms) && b.isinrange()) {
                     newBullets.push_back(b);
                 }   
             }
+
             mybullets = std::move(newBullets);
+
             newBullets.clear();
             for (Bullet& b : Enemybullets) {
                 b.update();
@@ -545,7 +589,7 @@ int main(int argc, char *argv[])
             players[myId].firing =lefthold; 
             for(Bullet &b :Enemybullets)
             {
-            if(players[myId].hit(b))
+            if(players[myId].hit(b) && !players[myId].respawning)
             {
                 players[myId].updateHealth();
                 //cout<<players[myId].gethealth()<<endl;
@@ -556,6 +600,8 @@ int main(int argc, char *argv[])
             }
             }
             Enemybullets = std::move(newEnemyBullets);
+            if(players.size()>1)
+            {
             for(Bullet &b :mybullets)
             {
                 for(Player &p : players)
@@ -570,6 +616,7 @@ int main(int argc, char *argv[])
                 }
             }
             mybullets = std::move(newBullets);
+            }
             for(Player &p : players)
             {
             window.renderplayer(p,camera.getPosition(),p.dir);
@@ -581,17 +628,31 @@ int main(int argc, char *argv[])
             window.render(nitrobar,position(0,0));
 
             //window.rendername(textInput);
+            window.renderlives(players[myId],lives);
             window.display();
             for(Player &p: players)
             {
-            p.update(platforms);
+                if(!p.respawning)
+                {
+                    p.update(platforms);
+                }
             }
             crosshair.update(mouseX,mouseY);
             healthbar.updateHealth((players[myId]));
             camera.update(position(players[myId].getframe().x,players[myId].getframe().y));
-            if(players[myId].isFlying || players[myId].isMovingSideways || lefthold)
+            if(players[myId].isFlying || players[myId].isMovingSideways || lefthold || players[myId].respawning ||SDL_GetTicks()-sendDatatime>500)
             {
             s.sendData(players[myId],mousedirection,lefthold,Bullet::gettheta(mouseX,mouseY));
+            sendDatatime = SDL_GetTicks();
+            }
+            playersalive =0;
+            for(Player &p :players)
+            {
+                if (!p.died)
+                {
+                    playersalive +=1;
+                }
+            }
             }
             
         }
@@ -599,11 +660,43 @@ int main(int argc, char *argv[])
         { 
             //client game
             window.clear();
+            if(players[myId].respawning &&!players[myId].died)
+            {   
+                
+                if(SDL_GetTicks()-respawnTime >1000)
+                {
+                    secondspassed+=1; 
+                    respawnTime = SDL_GetTicks();
+                }
+                
+                window.render(bg,position(0,0));
+                int remaintime = 6-secondspassed;
+                string remaintimestr = to_string(remaintime); 
+                window.rendertext("Respawning in",position(400,300));
+                window.rendertext(remaintimestr,position(550,350));
+                window.display();
+                if(remaintime==0)
+                {
+                    players[myId].respawning = false;
+                    secondspassed =0;
+                    c.sendData(players[myId],mousedirection,lefthold,Bullet::gettheta(mouseX,mouseY));
+                }
+            }
+            else if(playersalive ==1 && !players[myId].died)
+            {
+                window.clear();
+                window.render(bg,position(0,0));
+                window.rendertext("Victory",position(500,300));
+                window.display();
+                c.sendData(players[myId],mousedirection,true,0,true);
+            }
+            else{
+
             SDL_ShowCursor(SDL_DISABLE);
             SDL_GetMouseState(&mouseX, &mouseY);
             if(mouseX<550) mousedirection = -1;
             if(mouseX>=550) mousedirection =1;
-            if(number!=players.size())
+            while(number!=players.size())
             {
 
             json dataIn = c.receiveInitialData();
@@ -615,12 +708,10 @@ int main(int argc, char *argv[])
                 int y = dataIn["y"].as<int>();
                 players[id].setvalues(x,y);
                 number++;
-                cout<<number;
             }
             }
                 
-            else
-            {
+            
             json receivedData = c.receiveData();
             if(receivedData["found"].as_bool())
             {
@@ -629,11 +720,16 @@ int main(int argc, char *argv[])
                 int y = receivedData["y"].as<int>();
                 int dir = receivedData["dir"].as<int>();
                 bool isfiring = receivedData["isfiring"].as_bool();
+                bool isflying = receivedData["flying"].as_bool();
+                bool respawning = receivedData["respawning"].as_bool();
+                bool died = receivedData["died"].as_bool();
+                bool gameover = receivedData["gameover"].as_bool();
+                if(gameover) screen =10;
                 float theta = receivedData["theta"].as<float>();
                 if(id!=myId)
                 {
-                players[id].updatePosition(x,y,dir,theta,isfiring);
-                if(isfiring)
+                players[id].updatePosition(x,y,dir,theta,isfiring,isflying,respawning,died);
+                if(isfiring && !players[id].respawning)
                 {
                     if(SDL_GetTicks() - bulletstart2>100)
                     {
@@ -651,12 +747,13 @@ int main(int argc, char *argv[])
                     if(p.getid() !=myId)
                     {
                         p.firing = false;
+                        p.flying = false;
                     }
                 }
             }
-            }
             
-            if(lefthold)
+            
+            if(lefthold && !players[myId].respawning)
             {
                 if(SDL_GetTicks() -  bulletstart1 >100)
                 {
@@ -669,7 +766,8 @@ int main(int argc, char *argv[])
             std::vector<Bullet> newBullets;
             std::vector<Bullet> newEnemyBullets;
 
-            for (Bullet& b : mybullets) {
+            for (Bullet& b : mybullets) 
+            {
                 b.update();
                 if (!b.hit(platforms) && b.isinrange() ) {
                     newBullets.push_back(b);
@@ -677,7 +775,8 @@ int main(int argc, char *argv[])
             }
             mybullets = std::move(newBullets);
             newBullets.clear();
-            for (Bullet& b : Enemybullets) {
+            for (Bullet& b : Enemybullets) 
+            {
                 b.update();
                 if (!b.hit(platforms) && b.isinrange() ) {
                     newEnemyBullets.push_back(b);
@@ -695,7 +794,7 @@ int main(int argc, char *argv[])
             players[myId].firing =lefthold; 
             for(Bullet &b :Enemybullets)
             {
-            if(players[myId].hit(b))
+            if(players[myId].hit(b) && !players[myId].respawning)
             {
                 players[myId].updateHealth();
                 //cout<<players[myId].gethealth()<<endl;
@@ -733,19 +832,39 @@ int main(int argc, char *argv[])
             window.render(nitrobar,position(0,0));
             window.render(crosshair,position(0,0));
             //window.rendername(textInput);
+            window.renderlives(players[myId],lives);
+
             window.display();
             healthbar.updateHealth((players[myId]));
             crosshair.update(mouseX,mouseY);
             for(Player &p: players)
             {
-            p.update(platforms);
+                if(!p.respawning)
+                {
+                    p.update(platforms);
+                }
             }
             camera.update(position(players[myId].getframe().x,players[myId].getframe().y));
-            if(players[myId].isFlying || players[myId].isMovingSideways || lefthold)
+            if(players[myId].isFlying || players[myId].isMovingSideways || lefthold || players[myId].respawning || SDL_GetTicks()-sendDatatime>500)
             {
             c.sendData(players[myId],mousedirection,lefthold,Bullet::gettheta(mouseX,mouseY));
+            sendDatatime = SDL_GetTicks();
             }
-
+            playersalive =0;
+            for(Player &p :players)
+            {
+                if (!p.died)
+                {
+                    playersalive +=1;
+                }
+            }
+            }
+        }
+        else if(screen ==10)
+        {
+            window.render(bg,position(0,0));
+            window.rendertext("Defeat",position(500,300));
+            window.display();
         }
         leftclick = false;
         frameTime = SDL_GetTicks() - frameStart;

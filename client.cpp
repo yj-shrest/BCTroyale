@@ -132,7 +132,7 @@ void sendconfirmation(string n)
         }
         return receivedJson;
     }
-    void sendData(Player &p,int dir,bool isfiring,float theta=0)
+    void sendData(Player &p,int dir,bool isfiring,float theta=0,bool over = false)
         {
             json dataOut;
             dataOut["id"] = p.getid();
@@ -141,6 +141,11 @@ void sendconfirmation(string n)
             dataOut["dir"] = dir;
             dataOut["isfiring"] = isfiring;
             dataOut["theta"] = theta;
+            dataOut["flying"] = p.isFlying;
+            dataOut["respawning"] = p.respawning;
+            dataOut["died"] = p.died;
+            dataOut["gameover"] = over;
+
             string data = dataOut.to_string();
             if(dataSocket.send(data.c_str(),data.size()+1,serverIp,10000) !=sf::Socket::Done)
             {

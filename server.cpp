@@ -168,7 +168,7 @@ public:
                 cout<<"error";
             }
         }
-        void sendData(Player &p,int dir,bool isfiring,float theta=0)
+        void sendData(Player &p,int dir,bool isfiring,float theta=0,bool over = false)
         {
             json dataOut;
             dataOut["id"] = p.getid();
@@ -176,7 +176,12 @@ public:
             dataOut["y"] = p.getframe().y;
             dataOut["dir"] = dir;
             dataOut["isfiring"] = isfiring;
+            dataOut["flying"] = p.isFlying;
             dataOut["theta"] = theta;
+            dataOut["respawning"] = p.respawning;
+            dataOut["died"] = p.died;
+            dataOut["gameover"] = over;
+
             string data = dataOut.to_string();
             if(broadcastingSocket.send(data.c_str(),data.size()+1,broadcastAddress,15000) !=sf::Socket::Done)
             {

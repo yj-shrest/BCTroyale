@@ -2,20 +2,26 @@
 
 #include<random>
 class Bullet;
+
 class Player: public entity
-{   private:
+{   
+    private:
     const int maxhealth=100; 
     int health;
     float nitro;
     int mouseX, mouseY;
     int weaponwidth, weaponheight;
-    int lives = 3;
+    int lives;
     int id;
     string name;
+
     public:
     float theta;
+    bool died;
     int dir;
     bool firing;
+    bool flying;
+    bool respawning;
     Uint32 lastAnimationUpdateTime = 0;
 
     Player(string n,int i)
@@ -26,6 +32,10 @@ class Player: public entity
         weaponwidth = 50;
         weaponheight = 20;
         id =i;
+        lives =3;
+        flying = false;
+        respawning = false;
+        died = false;
     }
 
     Player():entity(getrandomx(),700,75,100)
@@ -34,6 +44,10 @@ class Player: public entity
         nitro =100;
         weaponwidth = 50;
         weaponheight = 20;
+        lives =3;
+        flying = false;
+        respawning = false;
+        died = false;
     }
     void setvalues()
     {
@@ -183,18 +197,31 @@ class Player: public entity
         }
         return false;
     }
-    void updatePosition(int x, int y,int d,float t,bool fi)
+    void updatePosition(int x, int y,int d,float t,bool fi,bool fly,bool res,bool dead)
     {
         getframe().x = x;
         getframe().y = y;
         dir = d;
         theta =t;
         firing = fi;
+        flying = fly;
+        respawning = res;
+        died = dead;
     }
     void update(std::vector<entity>& entities) {
         
-        
-
+        if(health<0 && lives >0)
+        {
+            getframe().y = 500;
+            getframe().x = getrandomx();
+            lives -=1;
+            if(lives==0)
+            {
+                died = true;
+            }
+            health = 100;
+            respawning = true;
+        }
         if(upcollide(entities))
         {
             isFlying = false;
@@ -209,7 +236,8 @@ class Player: public entity
             //nitro-=0.5f;
         }
         if(isOnGround(entities))
-        {   if(nitro<100)
+        {   
+        if(nitro<100)
         {
             nitro += 0.5f;
         }
@@ -217,9 +245,14 @@ class Player: public entity
         }
         if(getframe().y>1500)
         {  
+            
             getframe().y = 500;
+            getframe().x = getrandomx();
             nitro = 100;
             lives -=1;
+            if(lives ==0) died = true;
+            respawning = true;
+
         }
         if(!isFlying && !isOnGround(entities))
         {
@@ -240,7 +273,6 @@ class Player: public entity
             getframe().x += movementDirection * getspeed();
             }
         }
-
     }
 };
 void entity::updateHealth(Player &p)

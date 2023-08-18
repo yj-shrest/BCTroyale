@@ -66,7 +66,8 @@ class renderwindow
     }
     void renderplayer(Player &p,position camerapos,int direction =1)
     {
-        
+        if(!p.respawning){
+
         SDL_Rect dst;
         SDL_Texture *t;
         dst.x=p.getframe().x - camerapos.x;
@@ -90,15 +91,13 @@ class renderwindow
         }
         p.lastAnimationUpdateTime = currentTicks;
     }
-    if(p.isFlying)
+    if(p.isFlying || p.flying)
     {
         dst.h +=10;
         t = playerflyingtexture;
     }
     if (direction ==1)
     {
-        // cout<<dst.x<<endl;
-        // cout<<dst.y<<endl;
         SDL_RenderCopy(renderer,t,NULL,&dst);
     }
     else{
@@ -136,6 +135,7 @@ class renderwindow
     dst3.h = 40;
 
     SDL_RenderCopy(renderer, textTexture, NULL, &dst3);
+    }
 
     }
     void render(std::vector<entity>& entities,position camerapos) {

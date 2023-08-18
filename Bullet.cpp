@@ -94,9 +94,11 @@ class Bullet : public entity
         
         return false;
     }
-    bool hit(entity e)
+    bool hit(Player e)
     {
-        
+        if(!e.respawning)
+        {
+
             if(e.getframe().y<getframe().y+getframe().h && e.getframe().y+e.getframe().h>getframe().y)
             {
 
@@ -105,6 +107,7 @@ class Bullet : public entity
                 return true;
                 }
             }
+        }
         
         return false;
     }
