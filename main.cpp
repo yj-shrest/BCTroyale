@@ -1,8 +1,8 @@
 #include<iostream>
 #include<SDL2/SDL.h>
+#include <SDL2/SDL_mixer.h>
 #include <vector>
 #include<string>
-#include <thread>
 #include <jsoncons/json.hpp>
 
 using jsoncons::json;
@@ -24,17 +24,21 @@ const int frameDelay = 1000 / FPS;
 
 Uint32 frameStart;
 int frameTime;
-
 int main(int argc, char *argv[])
 {
     Camera camera(width, height);
-    SDL_Init(SDL_INIT_EVERYTHING);
     SDL_Init(SDL_INIT_VIDEO);
     TTF_Init();
     //DL_Window *window = SDL_CreateWindow("Game",SDL_WINDOWPOS_UNDEFINED,SDL_WINDOWPOS_UNDEFINED,width,height,SDL_WINDOW_ALLOW_HIGHDPI);
     renderwindow window("Minimiltia",width,height);
     SDL_Event windowevent;
 
+    Mix_Init(MIX_INIT_MP3);
+    Mix_OpenAudio(44100, MIX_DEFAULT_FORMAT, 2, 1024);
+
+    int JetSoundChannel = -1;
+    int BulletSoundChannel = -1;
+    int WalkingSoundChannel = -1;
 
     SDL_Texture *background = window.loadTexture("assets/background.png");
     SDL_Texture *rectplatform1 = window.loadTexture("assets/rectplatform1.png");
@@ -55,6 +59,10 @@ int main(int argc, char *argv[])
     SDL_Texture *bulletTexture = window.loadTexture ("assets/bullet.png");
     SDL_Texture *crosshairTexture = window.loadTexture ("assets/crosshair.png");
 
+    Mix_Chunk *walkingSound = Mix_LoadWAV("assets/walking.wav");
+    Mix_Chunk *bulletSound = Mix_LoadWAV("assets/bullet.mp3");
+    Mix_Chunk *jetSound = Mix_LoadWAV("assets/jet.mp3");
+    Mix_Music* introMusic = Mix_LoadMUS("assets/intromusic.mp3");
     entity bg(0,0,3000,1500,background);
     entity bg2(-3000,0,3000,1500,background);
     entity bg3(3000,0,3000,1500,background);
@@ -115,6 +123,7 @@ int main(int argc, char *argv[])
     Uint32 bulletstart1,bulletstart2,sendDatatime,respawnTime;
     int secondspassed=0;
     int playersalive;
+    bool introMusicPlayed = false;
     bool gamestarted;
     Client c(window);
     Server s(window);
@@ -131,6 +140,26 @@ int main(int argc, char *argv[])
             }
             if (windowevent.type == SDL_KEYDOWN)
             {
+                if ((windowevent.key.keysym.sym == SDLK_LEFT || windowevent.key.keysym.sym == SDLK_RIGHT) && (*player).isOnGround(platforms))
+                {
+                    if ((WalkingSoundChannel == -1 || !Mix_Playing(WalkingSoundChannel)))
+                    {
+                         WalkingSoundChannel = Mix_PlayChannel(-1, walkingSound, -1);
+                         
+                    }
+                }
+            }
+
+            if (windowevent.type == SDL_KEYUP || !(*player).isOnGround(platforms))
+            {
+                if (windowevent.key.keysym.sym == SDLK_LEFT || windowevent.key.keysym.sym == SDLK_RIGHT)
+                {
+                    Mix_HaltChannel(WalkingSoundChannel);
+                    WalkingSoundChannel = -1;
+                }
+            }
+            if (windowevent.type == SDL_KEYDOWN)
+            {
                if (windowevent.key.keysym.sym == SDLK_LEFT ||windowevent.key.keysym.sym == SDLK_a) {
             (*player).moveSideways(-1);
             }
@@ -139,6 +168,10 @@ int main(int argc, char *argv[])
             }
             else if (windowevent.key.keysym.sym == SDLK_UP || windowevent.key.keysym.sym == SDLK_w ) {
             (*player).jump();
+            if (JetSoundChannel == -1 || !Mix_Playing(JetSoundChannel))
+                    {
+                        JetSoundChannel = Mix_PlayChannel(-1, jetSound, -1);
+                    }
             }
             else if(windowevent.key.keysym.sym == SDLK_RETURN && (*player).getlives()==0){
                 hitenter = true;
@@ -184,12 +217,21 @@ int main(int argc, char *argv[])
                 if (windowevent.key.keysym.sym == SDLK_UP ||windowevent.key.keysym.sym == SDLK_w )
                 {
                     (*player).stopFlying();
+                    Mix_HaltChannel(JetSoundChannel);
+                    JetSoundChannel = -1;
                 }
         }
 
         
         window.clear();
-        
+        if ((screen == 1 || screen == 2 || screen == 4 || 
+             screen == 5 || screen == 6 || screen == 7) && Mix_PlayingMusic() == 0) {
+            Mix_PlayMusic(introMusic, 0);  // Play intro music once
+            introMusicPlayed = true;
+        }
+        if (screen == 3 || screen == 8 || screen == 9) {
+            Mix_HaltMusic(); // Stop the intro music
+        }
         if(init)
         {
         window.render(bg,position(0,0)); 
@@ -280,6 +322,7 @@ int main(int argc, char *argv[])
 
                mybullets.push_back(Bullet(575,420,16,4,bulletTexture,mouseX,mouseY,camera.getPosition()));
                bulletstart1 = SDL_GetTicks();
+               Mix_PlayChannel(-1, bulletSound, 0);
                 }
             }
             else{
@@ -327,6 +370,8 @@ int main(int argc, char *argv[])
                     {
                         Enemybullets.push_back(Bullet(m.getframe().x,m.getframe().y+30,16,4,bulletTexture,(*player).getpos()));
                         bulletstart2 = SDL_GetTicks();
+                         Mix_PlayChannel(-1, bulletSound, 0);
+
                     }
                 }
             }
@@ -564,6 +609,8 @@ int main(int argc, char *argv[])
                         position pos = position(players[id].getframe().x-width/2 , players[id].getframe().y-height/2);
                         Enemybullets.push_back(Bullet(575,420,16,4,bulletTexture,theta,pos));
                         bulletstart2 = SDL_GetTicks();
+                        Mix_PlayChannel(-1, bulletSound, 0);
+
                     }
                 }
             }
@@ -591,6 +638,8 @@ int main(int argc, char *argv[])
               
                mybullets.push_back(Bullet(575,420,16,4,bulletTexture,mouseX,mouseY,pos));
                bulletstart1 = SDL_GetTicks();
+               Mix_PlayChannel(-1, bulletSound, 0);
+
                 }
             }
             std::vector<Bullet> newBullets;
@@ -775,6 +824,8 @@ int main(int argc, char *argv[])
                         position pos = position(players[id].getframe().x-width/2 , players[id].getframe().y-height/2);
                         Enemybullets.push_back(Bullet(575,420,16,4,bulletTexture,theta,pos));
                         bulletstart2 = SDL_GetTicks();
+                        Mix_PlayChannel(-1, bulletSound, 0);
+
                     }
                 }
                 }
@@ -799,6 +850,8 @@ int main(int argc, char *argv[])
                 position pos = position (players[myId].getframe().x - width/2, players[myId].getframe().y - height/2);
                mybullets.push_back(Bullet(575,420,16,4,bulletTexture,mouseX,mouseY,pos));
                bulletstart1 = SDL_GetTicks();
+               Mix_PlayChannel(-1, bulletSound, 0);
+
                 }
             }
 
@@ -914,6 +967,10 @@ int main(int argc, char *argv[])
         //cout<<"End of a loop";
     }
     window.cleanup();
+    Mix_FreeChunk(bulletSound);
+    Mix_FreeChunk(jetSound);
+    Mix_FreeMusic(introMusic);
+    Mix_CloseAudio();
     SDL_ShowCursor(SDL_ENABLE);
     SDL_Quit();
     return 0;

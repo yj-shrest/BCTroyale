@@ -10,7 +10,6 @@
 class renderwindow
 {
     private:
-    SDL_Window *window;
     SDL_Renderer *renderer;
     SDL_Texture *playertexture;
     SDL_Texture *playerflyingtexture;
@@ -20,9 +19,11 @@ class renderwindow
     SDL_Texture *healthBarRectTexture;
     SDL_Texture *healthBarTexture;
     public:
+    SDL_Window *window;
     renderwindow(const char* t, int w, int h)
     {
         char* title = const_cast<char*>(t);
+        
         window = SDL_CreateWindow(title,SDL_WINDOWPOS_UNDEFINED,SDL_WINDOWPOS_UNDEFINED,w,h,SDL_WINDOW_ALLOW_HIGHDPI);
         renderer = SDL_CreateRenderer(window,-1, SDL_RENDERER_ACCELERATED && SDL_RENDERER_PRESENTVSYNC);
         playertexture = loadTexture("assets/char.png");
