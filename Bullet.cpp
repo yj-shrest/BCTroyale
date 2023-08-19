@@ -37,11 +37,13 @@ class Bullet : public entity
 }
     Bullet(int  px, int py,int  pw, int ph, SDL_Texture*t,position cpos):entity(px,py,pw,ph,t)
     {
-        initialpos = cpos;
+        frameposx = px;
+        frameposy = py;
+        initialpos = position(px,py);
         initialpos.y += 50;
         increment = 20;
         range = 400;
-        theta = atan2(initialpos.y-py,initialpos.x-px);
+        theta = atan2(cpos.y-py+20,cpos.x-px);
     }
     void update()
     {   

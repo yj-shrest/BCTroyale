@@ -7,12 +7,13 @@ class Player: public entity
 {   
     private:
     const int maxhealth=100; 
-    int health;
+    float health;
     float nitro;
     int mouseX, mouseY;
     int weaponwidth, weaponheight;
     int lives;
     int id;
+    float takingdamage= false;
     string name;
 
     public:
@@ -36,6 +37,7 @@ class Player: public entity
         flying = false;
         respawning = false;
         died = false;
+        firing = false;
     }
 
     Player():entity(getrandomx(),700,75,100)
@@ -48,6 +50,7 @@ class Player: public entity
         flying = false;
         respawning = false;
         died = false;
+        firing = false;
     }
     void setvalues()
     {
@@ -99,6 +102,7 @@ class Player: public entity
     void refill()
     {
         lives =3;
+        health =100;
     }
 
     void movedown()
@@ -134,9 +138,14 @@ class Player: public entity
 
 
     bool hit(Bullet &b);
-    void updateHealth()
+    void damage()
     {
+    
         health -=2;
+    }
+    void nodamage()
+    {
+        if(health<90) health += 0.2f;    
     }
 
 
@@ -233,7 +242,7 @@ class Player: public entity
         if(isFlying)
         {
             getframe().y -= getspeed();
-            //nitro-=0.5f;
+            nitro-=0.5f;
         }
         if(isOnGround(entities))
         {   
@@ -241,7 +250,7 @@ class Player: public entity
         {
             nitro += 0.5f;
         }
-        
+               
         }
         if(getframe().y>1500)
         {  

@@ -76,8 +76,8 @@ int main(int argc, char *argv[])
 
     vector <mob> mobs;
     mobs.push_back(mob(1150,680,120,125,mobTexture,healthBarTexture,healthBarRectTexture));
-    // mobs.push_back(mob(1600,1080,120,125,mobTexture,healthBarTexture,healthBarRectTexture));
-    // mobs.push_back(mob(2350,1080,120,125,mobTexture,healthBarTexture,healthBarRectTexture));
+    mobs.push_back(mob(1600,1080,120,125,mobTexture,healthBarTexture,healthBarRectTexture));
+    mobs.push_back(mob(2350,1080,120,125,mobTexture,healthBarTexture,healthBarRectTexture));
 
     vector <entity> platforms; 
     platforms.push_back(entity(100,1000,500,500,sqplatform));
@@ -107,8 +107,10 @@ int main(int argc, char *argv[])
     bool foundgame = false;
     int i =0;
     int j =1;
+    int score =0;
     int myId;
     bool once= true; 
+    bool gettinghit = false;
     bool loop = false;
     Uint32 bulletstart1,bulletstart2,sendDatatime,respawnTime;
     int secondspassed=0;
@@ -233,10 +235,17 @@ int main(int argc, char *argv[])
             if(hitenter)
             {
                 (*player).refill();
+                score = 0;
                 hitenter = false;
+                mobs.clear();
+                mobs.push_back(mob(1150,680,120,125,mobTexture,healthBarTexture,healthBarRectTexture));
+                mobs.push_back(mob(1600,1080,120,125,mobTexture,healthBarTexture,healthBarRectTexture));
+                mobs.push_back(mob(2350,1080,120,125,mobTexture,healthBarTexture,healthBarRectTexture));
+
             }
             window.render(bg,position(0,0));
             window.render(gameOverScreen,position(0,0));
+            window.rendertext("Score:"+to_string(score),position(450,100));
             window.display();
         }
         else{
@@ -260,11 +269,12 @@ int main(int argc, char *argv[])
             window.render(healthbar,position(0,0));
             window.render(nitrobar,position(0,0));
             window.renderlives((*player),lives);
-
+            window.rendertext("Score:"+to_string(score),position(500,50));
             window.rendername(textInput);
 
             if(lefthold)
             {
+                player->firing = true;
                 if(SDL_GetTicks() -  bulletstart1 >100)
                 {
 
@@ -272,13 +282,10 @@ int main(int argc, char *argv[])
                bulletstart1 = SDL_GetTicks();
                 }
             }
+            else{
+                player->firing= false;
+            }
             window.render(mybullets,camera.getPosition());
-            // if(lefthold)
-            // {
-            // window.render(weaponfire,(*player),mousedirection);
-            // }
-            // else window.render(weapon,(*player),mousedirection);
-
             window.render(crosshair,position(0,0));
             std::vector<Bullet> newBullets;
             std::vector<mob> newMobs;
@@ -297,6 +304,9 @@ int main(int argc, char *argv[])
                  if (!(m.gethp()<0)) {
                     newMobs.push_back(m);
                 }  
+                else{
+                    score +=100;
+                }
             }
 
             // Replace the bullets vector with the new vector
@@ -305,28 +315,57 @@ int main(int argc, char *argv[])
             
             
             //Mobs firing bullet part:
-            float dx = (*player).getpos().x- 1150;
-            float dy = (*player).getpos().y- 680;
+            for(mob &m : mobs)
+            {
+            float dx = (*player).getpos().x- m.getframe().x;
+            float dy = (*player).getpos().y- m.getframe().y-30;
             float distance  = std::sqrt(dx * dx + dy * dy);
-            if(distance<400)
-            {
-
-            if(SDL_GetTicks() - bulletstart2>200)
-            {
-            Enemybullets.push_back(Bullet(1150,680,16,4,bulletTexture,(*player).getpos()));
-            bulletstart2 = SDL_GetTicks();
+                if(distance<430)
+                {
+                    gettinghit = true;
+                    if(SDL_GetTicks() - bulletstart2>100)
+                    {
+                        Enemybullets.push_back(Bullet(m.getframe().x,m.getframe().y+30,16,4,bulletTexture,(*player).getpos()));
+                        bulletstart2 = SDL_GetTicks();
+                    }
+                }
             }
-            }
-            for (Bullet& b : Enemybullets) 
+            if(!gettinghit)
             {
-                b.update();   
+                player->nodamage();
             }
+            gettinghit = false;
+            vector<Bullet> newEnemyBullets;
+            for (Bullet& b : Enemybullets) {
+                b.update();
+                if (!b.hit(platforms) && b.isinrange()) {
+                    newEnemyBullets.push_back(b);
+                }   
+            }
+            Enemybullets = std::move(newEnemyBullets);
+            newEnemyBullets.clear();
             window.render(Enemybullets,camera.getPosition());
-
-
+            for(Bullet &b :Enemybullets)
+            {
+            if((*player).hit(b))
+            {
+                (*player).damage();
+            }
+            else
+            {
+                newEnemyBullets.push_back(b);
+            }
+            }
+            if(mobs.size()==0)
+            {
+                mobs.push_back(mob(1150,680,120,125,mobTexture,healthBarTexture,healthBarRectTexture));
+                mobs.push_back(mob(1600,1080,120,125,mobTexture,healthBarTexture,healthBarRectTexture));
+                mobs.push_back(mob(2350,1080,120,125,mobTexture,healthBarTexture,healthBarRectTexture));
+            }
+            Enemybullets = std::move(newEnemyBullets);
             crosshair.update(mouseX,mouseY);
             (*player).update(platforms);
-            
+            (*player).respawning = false;
             healthbar.updateHealth((*player));
             nitrobar.updatenitro((*player));
             window.display();
@@ -591,7 +630,7 @@ int main(int argc, char *argv[])
             {
             if(players[myId].hit(b) && !players[myId].respawning)
             {
-                players[myId].updateHealth();
+                players[myId].damage();
                 //cout<<players[myId].gethealth()<<endl;
             }
             else
@@ -796,7 +835,7 @@ int main(int argc, char *argv[])
             {
             if(players[myId].hit(b) && !players[myId].respawning)
             {
-                players[myId].updateHealth();
+                players[myId].damage();
                 //cout<<players[myId].gethealth()<<endl;
             }
             else
