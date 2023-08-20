@@ -1,32 +1,6 @@
-#pragma once
-#include <SFML/Network.hpp>
-#include <thread>
-#include <jsoncons/json.hpp>
+#include "server.hpp"
 
-using jsoncons::json;
-using namespace std;
-
-class Server
-{
-private:
-    sf::IpAddress serverIp;
-    vector<sf::IpAddress> playerIps;
-    bool started = false;
-    bool gameover = false;
-    bool isChange = false;
-    char c;
-    renderwindow window;
-    sf::Clock clock;
-    sf::UdpSocket broadcastingSocket;
-    sf::IpAddress broadcastAddress = sf::IpAddress::Broadcast;
-    sf::UdpSocket dataSocket;
-    char buffer[1024];
-    std::size_t received;
-    unsigned short senderPort;
-    sf::IpAddress senderIp;
-        
-public:
-    Server(renderwindow &w) : window(w)
+    Server::Server(renderwindow &w) : window(w)
     {
         serverIp = sf::IpAddress::getLocalAddress();
         playerIps.push_back(serverIp);
@@ -40,17 +14,14 @@ public:
 
         
     }
-    void startgame(){
-        started = true;
-    }
-    void initialize()
+    void Server::initialize()
     {
         if (dataSocket.bind(10000) != sf::Socket::Done)
         {
             cerr << "Binding failure" << endl;
         }
     }
-    json incomingThread()
+    json Server::incomingThread()
     {   
         
         // Initializing data in
@@ -78,7 +49,7 @@ public:
             }
             return dataIn;
         }
-    json receiveData()
+    json Server::receiveData()
     {   
         char buffer[1024];
         std::size_t received;
@@ -100,7 +71,7 @@ public:
     }
 
 
-    void broadcastingThread(vector<Player> players,bool st= false)
+    void Server::broadcastingThread(vector<Player> players,bool st)
     {
         vector<string> playernames;
         for(Player &p: players)
@@ -132,7 +103,7 @@ public:
             clock.restart();
         }
         }
-    void broadcastingStart(vector<Player> players,bool st= false)
+    void Server::broadcastingStart(vector<Player> players,bool st)
     {
         vector<string> playernames;
         for(Player &p: players)
@@ -156,7 +127,7 @@ public:
         
     }
 
-        void sendInitialData(Player &p)
+        void Server::sendInitialData(Player &p)
         {
             json dataOut;
             dataOut["id"] = p.getid();
@@ -168,7 +139,7 @@ public:
                 cout<<"error";
             }
         }
-        void sendData(Player &p,int dir,bool isfiring,float theta=0,bool over = false)
+        void Server::sendData(Player &p,int dir,bool isfiring,float theta,bool over)
         {
             json dataOut;
             dataOut["id"] = p.getid();
@@ -188,5 +159,3 @@ public:
                 cout<<"error";
             }
         }
-}
-;

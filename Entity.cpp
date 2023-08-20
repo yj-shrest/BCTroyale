@@ -1,22 +1,8 @@
-#pragma once
+#include"entity.hpp"
+   
+    entity::entity(){};
 
-#include<SDL2/SDL.h>
-#include<SDL2/SDL_image.h>
-#include<math.h>
-class Player;
-class mob;
-class entity
-{
-    //position pos;
-    SDL_Texture* texture;
-    const float moveSpeed = 5.0f;
-    SDL_Rect currentframe;
-    public:
-    bool isFlying = false;
-    bool isMovingSideways = false;
-    int movementDirection = 0;
-    entity(){}
-        entity(float px, float py,float pw, float ph)
+    entity::entity(float px, float py,float pw, float ph)
     {
         //pos.x = px;
         //pos.y = py;
@@ -25,14 +11,14 @@ class entity
         currentframe.w=pw;
         currentframe.h =ph ;
     }
-    void setval(float px, float py)
+    void entity::setval(float px, float py)
     {
         currentframe.x = px;
         currentframe.y = py;
         currentframe.w = 75;
         currentframe.h = 100;
     }
-    entity(float px, float py,float pw, float ph, SDL_Texture* t)
+    entity::entity(float px, float py,float pw, float ph, SDL::Texture* t)
     {
         //pos.x = px;
         //pos.y = py;
@@ -43,20 +29,17 @@ class entity
         currentframe.h =ph ;
     }
     
-    SDL_Rect& getframe() 
+    SDL::Rect& entity::getframe() 
     {
         return currentframe;
     }
-     int getspeed()
+     int entity::getspeed()
      {
         return moveSpeed;
      }
     
-    SDL_Texture* getTxt()
+    SDL::Texture* entity::getTxt()
     {
         return texture;
     }
-    void updateHealth(Player &p);
-    void updatenitro(Player &p);
 
-};

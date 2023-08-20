@@ -1,31 +1,13 @@
 
-#pragma once
+#include"windowrenderer.hpp"
+using namespace std;
 
-#include<iostream>
-#include<SDL2/SDL.h>
-#include<SDL2/SDL_image.h>
-#include<SDL2/SDL_ttf.h>
-#include<cmath>
-
-class renderwindow
-{
-    private:
-    SDL_Renderer *renderer;
-    SDL_Texture *playertexture;
-    SDL_Texture *playerflyingtexture;
-    SDL_Texture *playerwtexture; 
-    SDL_Texture *weapontexture ;
-    SDL_Texture *weaponfiretexture ;
-    SDL_Texture *healthBarRectTexture;
-    SDL_Texture *healthBarTexture;
-    public:
-    SDL_Window *window;
-    renderwindow(const char* t, int w, int h)
+    renderwindow::renderwindow(const char* t, int w, int h)
     {
         char* title = const_cast<char*>(t);
         
-        window = SDL_CreateWindow(title,SDL_WINDOWPOS_UNDEFINED,SDL_WINDOWPOS_UNDEFINED,w,h,SDL_WINDOW_ALLOW_HIGHDPI);
-        renderer = SDL_CreateRenderer(window,-1, SDL_RENDERER_ACCELERATED && SDL_RENDERER_PRESENTVSYNC);
+        window = sdl.createWindow(title,SDL::WindowPosUndefined,SDL::WindowPosUndefined,w,h,SDL::WindowAllowHighDPI);
+        renderer = sdl.createRenderer(window,-1, SDL::RendererAccelerated && SDL::RendererPresentVSync);
         playertexture = loadTexture("assets/char.png");
         playerflyingtexture =loadTexture("assets/charnitro.png");
         playerwtexture = loadTexture("assets/charw.png");
@@ -34,49 +16,49 @@ class renderwindow
         healthBarRectTexture = loadTexture("assets/healthbarrect.png");
         healthBarTexture = loadTexture("assets/healthbar.png");
     }
-    void cleanup()
+    void renderwindow::cleanup()
     {
-        SDL_DestroyWindow(window);
+        sdl.destroyWindow(window);
     }
 
-    SDL_Texture* loadTexture(const char* filepath)
+    SDL::Texture* renderwindow::loadTexture(const char* filepath)
     {
-        SDL_Texture *temp =NULL;
+        SDL::Texture *temp =NULL;
         char* fp = const_cast<char*> (filepath);
-        temp = IMG_LoadTexture(renderer,fp);
+        temp = sdl.loadTexture(renderer,fp);
         return temp;
     }
-    void clear()
+    void renderwindow::clear()
     {
-        SDL_RenderClear(renderer);
+        sdl.renderClear(renderer);
     }
-    void render(entity &ent,position camerapos, int direction =1)
+    void renderwindow::render(entity &ent,position camerapos, int direction)
     {
-        SDL_Rect dst;
+        SDL::Rect dst;
         dst.x=ent.getframe().x - camerapos.x;
         dst.y=ent.getframe().y - camerapos.y;
         dst.w= ent.getframe().w;
         dst.h = ent.getframe().h;
         if (direction ==1)
         {
-        SDL_RenderCopy(renderer,ent.getTxt(),NULL,&dst);
+        sdl.renderCopy(renderer,ent.getTxt(),NULL,&dst);
         }
         else{
-            SDL_RenderCopyEx(renderer,ent.getTxt(), NULL, &dst, 0, NULL, SDL_FLIP_HORIZONTAL);
+            sdl.renderCopyEx(renderer,ent.getTxt(), NULL, &dst, 0, NULL, SDL::FlipHorizontal);
         }
     }
-    void renderplayer(Player &p,position camerapos,int direction =1)
+    void renderwindow::renderplayer(Player &p,position camerapos,int direction)
     {
         if(!p.respawning){
 
-        SDL_Rect dst;
-        SDL_Texture *t;
+        SDL::Rect dst;
+        SDL::Texture *t;
         dst.x=p.getframe().x - camerapos.x;
         dst.y=p.getframe().y - camerapos.y;
         dst.w= p.getframe().w;
         dst.h = p.getframe().h;
         t = playertexture;
-        Uint32 currentTicks = SDL_GetTicks();
+        Uint32 currentTicks = sdl.getTicks();
         Uint32 animationDelay = 150; // Adjust the delay to control the animation speed (milliseconds)
     
     if (p.isMovingSideways && currentTicks - p.lastAnimationUpdateTime > animationDelay)
@@ -99,61 +81,61 @@ class renderwindow
     }
     if (direction ==1)
     {
-        SDL_RenderCopy(renderer,t,NULL,&dst);
+        sdl.renderCopy(renderer,t,NULL,&dst);
     }
     else{
-            SDL_RenderCopyEx(renderer,t, NULL, &dst, 0, NULL, SDL_FLIP_HORIZONTAL);
+            sdl.renderCopyEx(renderer,t, NULL, &dst, 0, NULL, SDL::FlipHorizontal);
     }
     //Rendering the weapon
-    SDL_Rect dst2;
+    SDL::Rect dst2;
     dst2.x = dst.x+15;
     dst2.y = dst.y+55;
     dst2.w = p.getweaponsize().x;
     dst2.h = p.getweaponsize().y;
     double angleDegrees = p.theta * (180.0 / M_PI);
-    SDL_Texture * wt;
+    SDL::Texture * wt;
     if(p.firing) 
     {
         wt = weaponfiretexture;
         dst2.w+=20;
     }
     else wt = weapontexture;
-    SDL_Point center = { 50 / 2, dst2.h / 2 };
+    SDL::Point center = { 50 / 2, dst2.h / 2 };
     if (direction ==-1)
-    SDL_RenderCopyEx(renderer, wt, NULL, &dst2, angleDegrees, &center, SDL_FLIP_VERTICAL);
+    sdl.renderCopyEx(renderer, wt, NULL, &dst2, angleDegrees, &center, SDL::FlipVertical);
     else
-    SDL_RenderCopyEx(renderer, wt, NULL, &dst2, angleDegrees, &center, SDL_FLIP_NONE);
+    sdl.renderCopyEx(renderer, wt, NULL, &dst2, angleDegrees, &center, SDL::NoFlip);
     ///rendering the name
     TTF_Font* font = TTF_OpenFont("assets/RichuMastRegular.ttf", 40);
     string textInput =p.getname();
-    SDL_Color textColor = { 27, 20, 100, 100 };
-    SDL_Surface* textSurface = TTF_RenderText_Solid(font, textInput.c_str(), textColor);
-    SDL_Texture* textTexture = SDL_CreateTextureFromSurface(renderer, textSurface);
-    SDL_Rect dst3;
+    SDL::Color textColor = { 27, 20, 100, 100 };
+    SDL::Surface* textSurface = TTF_RenderText_Solid(font, textInput.c_str(), textColor);
+    SDL::Texture* textTexture = sdl.createTextureFromSurface(renderer, textSurface);
+    SDL::Rect dst3;
     dst3.x = dst.x - textInput.length()*10+40;
     dst3.y = dst.y - 50;
     dst3.w = textInput.length()*20;
     dst3.h = 40;
 
-    SDL_RenderCopy(renderer, textTexture, NULL, &dst3);
+    sdl.renderCopy(renderer, textTexture, NULL, &dst3);
     }
 
     }
-    void render(std::vector<entity>& entities,position camerapos) {
-    SDL_Rect dst;
+    void renderwindow::render(std::vector<entity>& entities,position camerapos) {
+    SDL::Rect dst;
     for (entity& e : entities) {
         dst.x = e.getframe().x - camerapos.x;
         dst.y = e.getframe().y - camerapos.y;
         dst.w = e.getframe().w;
         dst.h = e.getframe().h;
-        SDL_RenderCopy(renderer, e.getTxt(),NULL, &dst);
+        sdl.renderCopy(renderer, e.getTxt(),NULL, &dst);
     }
 
     }
-    void render(std::vector<mob>& entities,position camerapos) {
-    SDL_Rect dst;
-    SDL_Rect Rdst;
-    SDL_Rect hpdst;
+    void renderwindow::render(std::vector<mob>& entities,position camerapos) {
+    SDL::Rect dst;
+    SDL::Rect Rdst;
+    SDL::Rect hpdst;
     for (mob& m : entities) {
         dst.x = m.getframe().x - camerapos.x;
         dst.y = m.getframe().y - camerapos.y;
@@ -168,90 +150,90 @@ class renderwindow
         hpdst.w = m.getsmallrect().w;
         hpdst.h = m.getsmallrect().h;
         
-        SDL_RenderCopy(renderer, m.getTxt(),NULL, &dst);
-        SDL_RenderCopy(renderer, m.getrecttxt(),NULL, &Rdst);
-        SDL_RenderCopy(renderer, m.gethptxt(),NULL, &hpdst);
+        sdl.renderCopy(renderer, m.getTxt(),NULL, &dst);
+        sdl.renderCopy(renderer, m.getrecttxt(),NULL, &Rdst);
+        sdl.renderCopy(renderer, m.gethptxt(),NULL, &hpdst);
         
     }
     }
-    void render(std::vector<Bullet>& bull,position cpos) {
-    SDL_Rect dst;
+    void renderwindow::render(std::vector<Bullet>& bull,position cpos) {
+    SDL::Rect dst;
     for (Bullet& b : bull) {
         dst.x = b.getframe().x - cpos.x;
         dst.y = b.getframe().y  - cpos.y;
         dst.w = b.getframe().w;
         dst.h = b.getframe().h;
         double angleDegrees = b.gettheta() * (180.0 / M_PI);
-        SDL_Point center = { dst.w / 2, dst.h / 2 };
-        SDL_RenderCopyEx(renderer, b.getTxt(), NULL, &dst, angleDegrees, &center, SDL_FLIP_NONE);
+        SDL::Point center = { dst.w / 2, dst.h / 2 };
+        sdl.renderCopyEx(renderer, b.getTxt(), NULL, &dst, angleDegrees, &center, SDL::NoFlip);
     }
     }
 
-    void renderlives(Player &p, entity &h)
+    void renderwindow::renderlives(Player &p, entity &h)
     {
         int l = p.getlives();
-        SDL_Rect dst = h.getframe();
+        SDL::Rect dst = h.getframe();
 
         for(int i = 0;i<l;i++)
         {
             dst.x += 50;
-            SDL_RenderCopy(renderer,h.getTxt(),NULL,&dst);
+            sdl.renderCopy(renderer,h.getTxt(),NULL,&dst);
         }
     }
 
-    void rendername(string name)
+    void renderwindow::rendername(string name)
     {
         TTF_Font* font = TTF_OpenFont("assets/RichuMastRegular.ttf", 40);
         string textInput =name;
-        SDL_Color textColor = { 27, 20, 100, 100 };
-        SDL_Surface* textSurface = TTF_RenderText_Solid(font, textInput.c_str(), textColor);
-        SDL_Texture* textTexture = SDL_CreateTextureFromSurface(renderer, textSurface);
+        SDL::Color textColor = { 27, 20, 100, 100 };
+        SDL::Surface* textSurface = TTF_RenderText_Solid(font, textInput.c_str(), textColor);
+        SDL::Texture* textTexture = sdl.createTextureFromSurface(renderer, textSurface);
 
-        SDL_Rect dst;
+        SDL::Rect dst;
         dst.x = 580- textInput.length()*10;
         dst.y = 305;
         dst.w = textInput.length()*20;
         dst.h = 40;
 
-        SDL_RenderCopy(renderer, textTexture, NULL, &dst);
+        sdl.renderCopy(renderer, textTexture, NULL, &dst);
     }
 
-    void inputname(string text)
+    void renderwindow::inputname(string text)
     {
         TTF_Font* font = TTF_OpenFont("assets/Jost.ttf", 60);
         TTF_SetFontStyle(font, TTF_STYLE_BOLD);
         string textInput =text;
-        SDL_Color textColor = { 27, 20, 100, 150 };
-        SDL_Surface* textSurface = TTF_RenderText_Solid(font, textInput.c_str(), textColor);
-        SDL_Texture* textTexture = SDL_CreateTextureFromSurface(renderer, textSurface);
+        SDL::Color textColor = { 27, 20, 100, 150 };
+        SDL::Surface* textSurface = TTF_RenderText_Solid(font, textInput.c_str(), textColor);
+        SDL::Texture* textTexture = sdl.createTextureFromSurface(renderer, textSurface);
 
-        SDL_Rect dst;
+        SDL::Rect dst;
         dst.x = 575- textInput.length()*20;
         dst.y = 380;
         dst.w = textInput.length()*40;
         dst.h = 60;
 
-        SDL_RenderCopy(renderer, textTexture, NULL, &dst);
+        sdl.renderCopy(renderer, textTexture, NULL, &dst);
     }
-    void rendertext(string text, position p)
+    void renderwindow::rendertext(string text, position p)
     {
         TTF_Font* font = TTF_OpenFont("assets/Jost.ttf", 60);
         TTF_SetFontStyle(font, TTF_STYLE_BOLD);
         string textInput =text;
-        SDL_Color textColor = { 27, 20, 100, 255 };
-        SDL_Surface* textSurface = TTF_RenderText_Solid(font, textInput.c_str(), textColor);
-        SDL_Texture* textTexture = SDL_CreateTextureFromSurface(renderer, textSurface);
+        SDL::Color textColor = { 27, 20, 100, 255 };
+        SDL::Surface* textSurface = TTF_RenderText_Solid(font, textInput.c_str(), textColor);
+        SDL::Texture* textTexture = sdl.createTextureFromSurface(renderer, textSurface);
 
-        SDL_Rect dst;
+        SDL::Rect dst;
         dst.x = p.x;
         dst.y = p.y;
         dst.w = textInput.length()*25;
         dst.h = 45;
 
-        SDL_RenderCopy(renderer, textTexture, NULL, &dst);
+        sdl.renderCopy(renderer, textTexture, NULL, &dst);
     }
-    void display()
+    void renderwindow::display()
     {
-        SDL_RenderPresent(renderer);
+        sdl.renderPresent(renderer);
     }
-};
+

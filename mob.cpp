@@ -1,20 +1,5 @@
-#pragma once
-
-#include<SDL2/SDL.h>
-#include<SDL2/SDL_image.h>
-#include "Entity.cpp"
-#include<vector>
-class Bullet;
-class mob: public entity
-{
-    private:
-    int hp;
-    SDL_Texture *hptexture;
-    SDL_Texture *hprecttexture;
-    SDL_Rect rectframebig;
-    SDL_Rect rectframesmall;
-    public:
-    mob (float px, float py,float pw, float ph, SDL_Texture* mobtext,SDL_Texture* hptxt,SDL_Texture* recttext ):entity(px,py,pw,ph,mobtext)
+#include "mob.hpp"
+    mob::mob (float px, float py,float pw, float ph, SDL::Texture* mobtext,SDL::Texture* hptxt,SDL::Texture* recttext ):entity(px,py,pw,ph,mobtext)
     {
         hp = 100;
         hptexture = hptxt;
@@ -29,34 +14,32 @@ class mob: public entity
         rectframesmall.w = rectframebig.w -2;
         rectframesmall.h = rectframebig.h -2;
     }
-    SDL_Rect& getsmallrect()
+    SDL::Rect& mob::getsmallrect()
     {
         return rectframesmall;
     }
-    SDL_Rect& getbigrect()
+    SDL::Rect& mob::getbigrect()
     {
         return rectframebig;
     }
-    SDL_Texture* getrecttxt()
+    SDL::Texture* mob::getrecttxt()
     {
         return hprecttexture;
     }
-    SDL_Texture* gethptxt()
+    SDL::Texture* mob::gethptxt()
     {
         return hptexture;
     }
-    int gethp()
+    int mob::gethp()
     {
         return hp;
     }
-    void update()
+    void mob::update()
     {
         hp-=2;
         rectframesmall.w = hp;
     }
    
-    bool hit(std::vector<Bullet>& bullets);
-};
-
+    
 
    

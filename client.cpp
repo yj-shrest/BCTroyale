@@ -1,40 +1,10 @@
-#include <SFML/Network.hpp>
-#include <iostream>
-#include <vector>
-#include <thread>
-#include <jsoncons/json.hpp>
-
-using jsoncons::json;
+#include "client.hpp"
 using namespace std;
-
-class Client
-{
-private:
-    bool started = false;
-    bool gameover = false;
-    bool joined = false;
-    bool found = false;
-    json middleground;
-    sf::IpAddress serverIp;
-    sf::UdpSocket receivingSocket;
-    sf::UdpSocket dataSocket;
-    vector<string> playerNames;
-    renderwindow window;
-
-    string show = "Searching for a Game";
-    char buffer[1024];
-    size_t received;
-    sf::IpAddress hostIp, senderIp, dummyIP;
-    unsigned short senderPort;
-    json recievedJson;
-    string jsonString;
-    sf::Clock clock;
-    sf::IpAddress broadcastAddress = sf::IpAddress::Broadcast;
-public:
-    Client(renderwindow &w): window(w)
+using namespace jsoncons;
+    Client::Client(renderwindow &w): window(w)
     {
     }
-    void initialize()
+    void Client::initialize()
     {
         if(receivingSocket.bind(15000)!=sf::Socket::Done){
             cout<<"failure binding receiving socket";
@@ -43,7 +13,7 @@ public:
             cout<<"failure binding data socket";
         }
     }
-    vector<Player> receivingThread(bool &gs)
+    vector<Player> Client::receivingThread(bool &gs)
     {
         vector<Player> receivedPlayers;
         receivingSocket.setBlocking(false);
@@ -67,7 +37,7 @@ public:
             gs = false;
             return receivedPlayers;
     }
-    bool scanningThread()
+    bool Client::scanningThread()
     {
         receivingSocket.setBlocking(false);
         if(!found)
@@ -89,7 +59,7 @@ public:
         window.rendertext(show,position(300,200));   
         return found;         
     }
-void sendconfirmation(string n)
+void Client::sendconfirmation(string n)
 
     {
             dataSocket.setBlocking(false);
@@ -108,7 +78,7 @@ void sendconfirmation(string n)
                 cout<<"confirmation sent"<<endl;
             }
         }
-    json receiveInitialData()
+    json Client::receiveInitialData()
     {
         json receivedJson;
         receivedJson["found"] = false; 
@@ -120,7 +90,7 @@ void sendconfirmation(string n)
         }
         return receivedJson;
     }
-    json receiveData()
+    json Client::receiveData()
     {
         json receivedJson;
         receivedJson["found"] = false; 
@@ -132,7 +102,7 @@ void sendconfirmation(string n)
         }
         return receivedJson;
     }
-    void sendData(Player &p,int dir,bool isfiring,float theta=0,bool over = false)
+    void Client::sendData(Player &p,int dir,bool isfiring,float theta,bool over)
         {
             json dataOut;
             dataOut["id"] = p.getid();
@@ -152,4 +122,4 @@ void sendconfirmation(string n)
                 cout<<"error";
             }
         }
-};
+

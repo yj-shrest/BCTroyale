@@ -1,37 +1,33 @@
 #include<iostream>
-#include<SDL2/SDL.h>
-#include <SDL2/SDL_mixer.h>
 #include <vector>
-#include<string>
+#include <string>
 #include <jsoncons/json.hpp>
-
 using jsoncons::json;
 using namespace std;
-#include "position.cpp"
-#include "Entity.cpp"
-#include "player.cpp"
-#include "camera.cpp"
-#include "mob.cpp"
-#include "Bullet.cpp"
-#include "crosshair.cpp"
-#include "windowrenderer.cpp"
-#include "client.cpp"
-#include "server.cpp"
+#include "SDL.hpp"
+#include "position.hpp"
+#include "Bullet.hpp"
+#include "entity.hpp"
+#include "player.hpp"
+#include "mob.hpp"
+#include "camera.hpp"
+#include "crosshair.hpp"
+#include "windowrenderer.hpp"
+#include "client.hpp"
+#include "server.hpp"
 
 const int width = 1100, height = 700;
 const int FPS = 60;
 const int frameDelay = 1000 / FPS;
 
-Uint32 frameStart;
-int frameTime;
 int main(int argc, char *argv[])
 {
     Camera camera(width, height);
-    SDL_Init(SDL_INIT_VIDEO);
-    TTF_Init();
-    //DL_Window *window = SDL_CreateWindow("Game",SDL_WINDOWPOS_UNDEFINED,SDL_WINDOWPOS_UNDEFINED,width,height,SDL_WINDOW_ALLOW_HIGHDPI);
+    SDL sdl;
     renderwindow window("Minimiltia",width,height);
-    SDL_Event windowevent;
+    SDL::Event windowevent;
+    Uint32 frameStart;
+    int frameTime;
 
     Mix_Init(MIX_INIT_MP3);
     Mix_OpenAudio(44100, MIX_DEFAULT_FORMAT, 2, 1024);
@@ -40,29 +36,29 @@ int main(int argc, char *argv[])
     int BulletSoundChannel = -1;
     int WalkingSoundChannel = -1;
 
-    SDL_Texture *background = window.loadTexture("assets/background.png");
-    SDL_Texture *rectplatform1 = window.loadTexture("assets/rectplatform1.png");
-    SDL_Texture *rectplatform2 = window.loadTexture("assets/rectplatform2.png");
-    SDL_Texture *sqplatform = window.loadTexture("assets/sqplatform.png");
-    SDL_Texture *healthBarRectTexture = window.loadTexture("assets/healthbarrect.png");
-    SDL_Texture *healthBarTexture = window.loadTexture("assets/healthbar.png");
-    SDL_Texture *nitroBarTexture = window.loadTexture("assets/nitrobar.png");
-    SDL_Texture *gamelogoTexture = window.loadTexture("assets/gamelogo.png");
-    SDL_Texture *namemenuTexture = window.loadTexture("assets/namemenu.png");
-    SDL_Texture *heartTexture = window.loadTexture("assets/heart.png");
-    SDL_Texture *gameoverTexture = window.loadTexture("assets/gameover.png");
-    SDL_Texture *modesTexture = window.loadTexture("assets/modes.png");
-    SDL_Texture *hostjoinTexture = window.loadTexture("assets/hostjoin.png");
-    SDL_Texture *joinbuttonTexture = window.loadTexture("assets/joinbutton.png");
-    SDL_Texture *lobbyTexture = window.loadTexture("assets/lobby.png");
-    SDL_Texture *mobTexture = window.loadTexture("assets/mob.png");
-    SDL_Texture *bulletTexture = window.loadTexture ("assets/bullet.png");
-    SDL_Texture *crosshairTexture = window.loadTexture ("assets/crosshair.png");
+    SDL::Texture *background = window.loadTexture("assets/background.png");
+    SDL::Texture *rectplatform1 = window.loadTexture("assets/rectplatform1.png");
+    SDL::Texture *rectplatform2 = window.loadTexture("assets/rectplatform2.png");
+    SDL::Texture *sqplatform = window.loadTexture("assets/sqplatform.png");
+    SDL::Texture *healthBarRectTexture = window.loadTexture("assets/healthbarrect.png");
+    SDL::Texture *healthBarTexture = window.loadTexture("assets/healthbar.png");
+    SDL::Texture *nitroBarTexture = window.loadTexture("assets/nitrobar.png");
+    SDL::Texture *gamelogoTexture = window.loadTexture("assets/gamelogo.png");
+    SDL::Texture *namemenuTexture = window.loadTexture("assets/namemenu.png");
+    SDL::Texture *heartTexture = window.loadTexture("assets/heart.png");
+    SDL::Texture *gameoverTexture = window.loadTexture("assets/gameover.png");
+    SDL::Texture *modesTexture = window.loadTexture("assets/modes.png");
+    SDL::Texture *hostjoinTexture = window.loadTexture("assets/hostjoin.png");
+    SDL::Texture *joinbuttonTexture = window.loadTexture("assets/joinbutton.png");
+    SDL::Texture *lobbyTexture = window.loadTexture("assets/lobby.png");
+    SDL::Texture *mobTexture = window.loadTexture("assets/mob.png");
+    SDL::Texture *bulletTexture = window.loadTexture ("assets/bullet.png");
+    SDL::Texture *crosshairTexture = window.loadTexture ("assets/crosshair.png");
 
-    Mix_Chunk *walkingSound = Mix_LoadWAV("assets/walking.wav");
-    Mix_Chunk *bulletSound = Mix_LoadWAV("assets/bullet.mp3");
-    Mix_Chunk *jetSound = Mix_LoadWAV("assets/jet.mp3");
-    Mix_Music* introMusic = Mix_LoadMUS("assets/intromusic.mp3");
+    SDL::SoundChunk *walkingSound = Mix_LoadWAV("assets/walking.wav");
+    SDL::SoundChunk *bulletSound = Mix_LoadWAV("assets/bullet.mp3");
+    SDL::SoundChunk *jetSound = Mix_LoadWAV("assets/jet.mp3");
+    SDL::Music* introMusic = Mix_LoadMUS("assets/intromusic.mp3");
     entity bg(0,0,3000,1500,background);
     entity bg2(-3000,0,3000,1500,background);
     entity bg3(3000,0,3000,1500,background);
@@ -131,64 +127,64 @@ int main(int argc, char *argv[])
     while (true)
     { 
         
-        frameStart = SDL_GetTicks();
-        if (SDL_PollEvent(&windowevent))
+        frameStart = sdl.getTicks();
+        if (sdl.pollEvent(windowevent))
         {
-            if(SDL_QUIT == windowevent.type)
+            if(SDL::QUIT == windowevent.type)
             {
                 break;
             }
-            if (windowevent.type == SDL_KEYDOWN)
+            if (windowevent.type == SDL::KEY_DOWN)
             {
-                if ((windowevent.key.keysym.sym == SDLK_LEFT || windowevent.key.keysym.sym == SDLK_RIGHT) && (*player).isOnGround(platforms))
+                if ((windowevent.key.keysym.sym == SDL::LEFT || windowevent.key.keysym.sym == SDL::RIGHT) && (*player).isOnGround(platforms))
                 {
-                    if ((WalkingSoundChannel == -1 || !Mix_Playing(WalkingSoundChannel)))
+                    if ((WalkingSoundChannel == -1 || !sdl.isChannelPlaying(WalkingSoundChannel)))
                     {
-                         WalkingSoundChannel = Mix_PlayChannel(-1, walkingSound, -1);
+                         WalkingSoundChannel = sdl.playSoundChannel(walkingSound,-1, -1);
                          
                     }
                 }
             }
 
-            if (windowevent.type == SDL_KEYUP || !(*player).isOnGround(platforms))
+            if (windowevent.type == SDL::KEY_UP || !(*player).isOnGround(platforms))
             {
-                if (windowevent.key.keysym.sym == SDLK_LEFT || windowevent.key.keysym.sym == SDLK_RIGHT)
+                if (windowevent.key.keysym.sym == SDL::LEFT || windowevent.key.keysym.sym == SDL::RIGHT)
                 {
-                    Mix_HaltChannel(WalkingSoundChannel);
+                    sdl.haltSoundChannel(WalkingSoundChannel);
                     WalkingSoundChannel = -1;
                 }
             }
-            if (windowevent.type == SDL_KEYDOWN)
+            if (windowevent.type == SDL::KEY_DOWN)
             {
-               if (windowevent.key.keysym.sym == SDLK_LEFT ||windowevent.key.keysym.sym == SDLK_a) {
+               if (windowevent.key.keysym.sym == SDL::LEFT ||windowevent.key.keysym.sym == SDL::a) {
             (*player).moveSideways(-1);
             }
-            else if (windowevent.key.keysym.sym == SDLK_RIGHT || windowevent.key.keysym.sym == SDLK_d ) {
+            else if (windowevent.key.keysym.sym == SDL::RIGHT || windowevent.key.keysym.sym == SDL::d ) {
             (*player).moveSideways(1);
             }
-            else if (windowevent.key.keysym.sym == SDLK_UP || windowevent.key.keysym.sym == SDLK_w ) {
+            else if (windowevent.key.keysym.sym == SDL::UP || windowevent.key.keysym.sym == SDL::w ) {
             (*player).jump();
-            if (JetSoundChannel == -1 || !Mix_Playing(JetSoundChannel))
+            if (JetSoundChannel == -1 || !sdl.isChannelPlaying(JetSoundChannel))
                     {
-                        JetSoundChannel = Mix_PlayChannel(-1, jetSound, -1);
+                        JetSoundChannel = sdl.playSoundChannel(jetSound,-1, -1);
                     }
             }
-            else if(windowevent.key.keysym.sym == SDLK_RETURN && (*player).getlives()==0){
+            else if(windowevent.key.keysym.sym == SDL::ENTER && (*player).getlives()==0){
                 hitenter = true;
             }   
 
             if (typing) {
                     
-                    if (windowevent.key.keysym.sym == SDLK_RETURN) {
+                    if (windowevent.key.keysym.sym == SDL::ENTER) {
                         typing = false; // Finish typing on pressing Enter
                         screen += 1;
                     }
-                    else if (windowevent.key.keysym.sym == SDLK_BACKSPACE && textInput.length() > 0) {
+                    else if (windowevent.key.keysym.sym == SDL::BACKSPACE && textInput.length() > 0) {
                         textInput.pop_back(); // Delete the last character on pressing Backspace
                     }
                 }
             }
-            else if (windowevent.type == SDL_TEXTINPUT && typing) {
+            else if (windowevent.type == SDL::TEXT_INPUT && typing) {
                 if(i ==0)
                 {
                     textInput = "";
@@ -196,28 +192,28 @@ int main(int argc, char *argv[])
                 }
                 textInput += windowevent.text.text; // Append the entered character to the text input
             }
-            else if (windowevent.type == SDL_MOUSEBUTTONDOWN) {
-            if (windowevent.button.button == SDL_BUTTON_LEFT) {
+            else if (windowevent.type == SDL::MOUSE_BUTTON_DOWN) {
+            if (windowevent.button.button == SDL::BUTTON_LEFT) {
             int clickx = windowevent.button.x; // X coordinate of the mouse
             int clicky = windowevent.button.y; // Y coordinate of the mouse
             leftclick = true;
             lefthold = true;
             }
             } 
-            else if (windowevent.type == SDL_MOUSEBUTTONUP) {
-            if (windowevent.button.button == SDL_BUTTON_LEFT) {
+            else if (windowevent.type == SDL::MOUSE_BUTTON_UP) {
+            if (windowevent.button.button == SDL::BUTTON_LEFT) {
             lefthold = false;
             }
             } 
             }
-            if (windowevent.type == SDL_KEYUP) {
-                if (windowevent.key.keysym.sym == SDLK_LEFT || windowevent.key.keysym.sym == SDLK_RIGHT ||windowevent.key.keysym.sym == SDLK_a ||windowevent.key.keysym.sym == SDLK_d ) {
+            if (windowevent.type == SDL::KEY_UP) {
+                if (windowevent.key.keysym.sym == SDL::LEFT || windowevent.key.keysym.sym == SDL::RIGHT ||windowevent.key.keysym.sym == SDL::a ||windowevent.key.keysym.sym == SDL::d ) {
             (*player).stopMovingSideways();
                 }
-                if (windowevent.key.keysym.sym == SDLK_UP ||windowevent.key.keysym.sym == SDLK_w )
+                if (windowevent.key.keysym.sym == SDL::UP ||windowevent.key.keysym.sym == SDL::w )
                 {
                     (*player).stopFlying();
-                    Mix_HaltChannel(JetSoundChannel);
+                    sdl.haltSoundChannel(JetSoundChannel);
                     JetSoundChannel = -1;
                 }
         }
@@ -226,18 +222,18 @@ int main(int argc, char *argv[])
         window.clear();
         if ((screen == 1 || screen == 2 || screen == 4 || 
              screen == 5 || screen == 6 || screen == 7) && Mix_PlayingMusic() == 0) {
-            Mix_PlayMusic(introMusic, 0);  // Play intro music once
+            sdl.playMusic(introMusic, 0);  // Play intro music once
             introMusicPlayed = true;
         }
         if (screen == 3 || screen == 8 || screen == 9) {
-            Mix_HaltMusic(); // Stop the intro music
+            sdl.haltMusic(); // Stop the intro music
         }
         if(init)
         {
         window.render(bg,position(0,0)); 
         window.render(gamelogo,position(0,0));
         window.display();
-        SDL_Delay(1000);
+        sdl.delay(1000);
         init = false;
         }
 
@@ -252,7 +248,7 @@ int main(int argc, char *argv[])
         {   
             if(leftclick)
             {
-                SDL_GetMouseState(&mouseX, &mouseY);
+                sdl.getMouseState(&mouseX, &mouseY);
                 if(mouseX>300 && mouseX<800)
                 {
                     if(mouseY>270 && mouseY<400)
@@ -293,8 +289,8 @@ int main(int argc, char *argv[])
         else{
 
             camera.update(position((*player).getframe().x,(*player).getframe().y));
-            SDL_ShowCursor(SDL_DISABLE);
-            SDL_GetMouseState(&mouseX, &mouseY);
+            sdl.hideCursor();
+            sdl.getMouseState(&mouseX, &mouseY);
             if(mouseX<550) mousedirection = -1;
             if(mouseX>=550) mousedirection =1;
 
@@ -317,12 +313,12 @@ int main(int argc, char *argv[])
             if(lefthold)
             {
                 player->firing = true;
-                if(SDL_GetTicks() -  bulletstart1 >100)
+                if(sdl.getTicks() -  bulletstart1 >100)
                 {
 
                mybullets.push_back(Bullet(575,420,16,4,bulletTexture,mouseX,mouseY,camera.getPosition()));
-               bulletstart1 = SDL_GetTicks();
-               Mix_PlayChannel(-1, bulletSound, 0);
+               bulletstart1 = sdl.getTicks();
+               sdl.playSoundChunk(bulletSound,-1, 0);
                 }
             }
             else{
@@ -366,11 +362,11 @@ int main(int argc, char *argv[])
                 if(distance<430)
                 {
                     gettinghit = true;
-                    if(SDL_GetTicks() - bulletstart2>100)
+                    if(sdl.getTicks() - bulletstart2>100)
                     {
                         Enemybullets.push_back(Bullet(m.getframe().x,m.getframe().y+30,16,4,bulletTexture,(*player).getpos()));
-                        bulletstart2 = SDL_GetTicks();
-                         Mix_PlayChannel(-1, bulletSound, 0);
+                        bulletstart2 = sdl.getTicks();
+                         sdl.playSoundChannel(bulletSound,-1, 0);
 
                     }
                 }
@@ -420,7 +416,7 @@ int main(int argc, char *argv[])
         {
             if(leftclick)
             {
-                SDL_GetMouseState(&mouseX, &mouseY);
+                sdl.getMouseState(&mouseX, &mouseY);
                 if(mouseX>300 && mouseX<800)
                 {
                     if(mouseY>200 && mouseY<310)
@@ -548,10 +544,10 @@ int main(int argc, char *argv[])
             if(players[myId].respawning &&!players[myId].died)
             {   
                 
-                if(SDL_GetTicks()-respawnTime >1000)
+                if(sdl.getTicks()-respawnTime >1000)
                 {
                     secondspassed+=1; 
-                    respawnTime = SDL_GetTicks();
+                    respawnTime = sdl.getTicks();
                 }
                 
                 window.render(bg,position(0,0));
@@ -604,12 +600,12 @@ int main(int argc, char *argv[])
                 player[id].updatePosition(x,y,dir,theta,isfiring,isflying,respawning,died);
                 if(isfiring && !players[id].respawning)
                 {
-                    if(SDL_GetTicks() - bulletstart2>100)
+                    if(sdl.getTicks() - bulletstart2>100)
                     {
                         position pos = position(players[id].getframe().x-width/2 , players[id].getframe().y-height/2);
                         Enemybullets.push_back(Bullet(575,420,16,4,bulletTexture,theta,pos));
-                        bulletstart2 = SDL_GetTicks();
-                        Mix_PlayChannel(-1, bulletSound, 0);
+                        bulletstart2 = sdl.getTicks();
+                        sdl.playSoundChunk(bulletSound,-1, 0);
 
                     }
                 }
@@ -625,20 +621,20 @@ int main(int argc, char *argv[])
                     }
                 }
             }
-            SDL_ShowCursor(SDL_DISABLE);
-            SDL_GetMouseState(&mouseX, &mouseY);
+            sdl.hideCursor();
+            sdl.getMouseState(&mouseX, &mouseY);
             if(mouseX<550) mousedirection = -1;
             if(mouseX>=550) mousedirection =1;
 
             if(lefthold && !players[myId].respawning)
             {
-                if(SDL_GetTicks() -  bulletstart1 >100)
+                if(sdl.getTicks() -  bulletstart1 >100)
                 {
                 position pos = position (players[myId].getframe().x - width/2, players[myId].getframe().y - height/2);
               
                mybullets.push_back(Bullet(575,420,16,4,bulletTexture,mouseX,mouseY,pos));
-               bulletstart1 = SDL_GetTicks();
-               Mix_PlayChannel(-1, bulletSound, 0);
+               bulletstart1 = sdl.getTicks();
+               sdl.playSoundChunk(bulletSound,-1, 0);
 
                 }
             }
@@ -728,10 +724,10 @@ int main(int argc, char *argv[])
             crosshair.update(mouseX,mouseY);
             healthbar.updateHealth((players[myId]));
             camera.update(position(players[myId].getframe().x,players[myId].getframe().y));
-            if(players[myId].isFlying || players[myId].isMovingSideways || lefthold || players[myId].respawning ||SDL_GetTicks()-sendDatatime>500)
+            if(players[myId].isFlying || players[myId].isMovingSideways || lefthold || players[myId].respawning ||sdl.getTicks()-sendDatatime>500)
             {
             s.sendData(players[myId],mousedirection,lefthold,Bullet::gettheta(mouseX,mouseY));
-            sendDatatime = SDL_GetTicks();
+            sendDatatime = sdl.getTicks();
             }
             playersalive =0;
             for(Player &p :players)
@@ -751,10 +747,10 @@ int main(int argc, char *argv[])
             if(players[myId].respawning &&!players[myId].died)
             {   
                 
-                if(SDL_GetTicks()-respawnTime >1000)
+                if(sdl.getTicks()-respawnTime >1000)
                 {
                     secondspassed+=1; 
-                    respawnTime = SDL_GetTicks();
+                    respawnTime = sdl.getTicks();
                 }
                 
                 window.render(bg,position(0,0));
@@ -780,8 +776,8 @@ int main(int argc, char *argv[])
             }
             else{
 
-            SDL_ShowCursor(SDL_DISABLE);
-            SDL_GetMouseState(&mouseX, &mouseY);
+            sdl.hideCursor();
+            sdl.getMouseState(&mouseX, &mouseY);
             if(mouseX<550) mousedirection = -1;
             if(mouseX>=550) mousedirection =1;
             while(number!=players.size())
@@ -819,12 +815,12 @@ int main(int argc, char *argv[])
                 players[id].updatePosition(x,y,dir,theta,isfiring,isflying,respawning,died);
                 if(isfiring && !players[id].respawning)
                 {
-                    if(SDL_GetTicks() - bulletstart2>100)
+                    if(sdl.getTicks() - bulletstart2>100)
                     {
                         position pos = position(players[id].getframe().x-width/2 , players[id].getframe().y-height/2);
                         Enemybullets.push_back(Bullet(575,420,16,4,bulletTexture,theta,pos));
-                        bulletstart2 = SDL_GetTicks();
-                        Mix_PlayChannel(-1, bulletSound, 0);
+                        bulletstart2 = sdl.getTicks();
+                        sdl.playSoundChunk(bulletSound,-1, 0);
 
                     }
                 }
@@ -845,12 +841,12 @@ int main(int argc, char *argv[])
             
             if(lefthold && !players[myId].respawning)
             {
-                if(SDL_GetTicks() -  bulletstart1 >100)
+                if(sdl.getTicks() -  bulletstart1 >100)
                 {
                 position pos = position (players[myId].getframe().x - width/2, players[myId].getframe().y - height/2);
                mybullets.push_back(Bullet(575,420,16,4,bulletTexture,mouseX,mouseY,pos));
-               bulletstart1 = SDL_GetTicks();
-               Mix_PlayChannel(-1, bulletSound, 0);
+               bulletstart1 = sdl.getTicks();
+               sdl.playSoundChunk( bulletSound,-1, 0);
 
                 }
             }
@@ -937,10 +933,10 @@ int main(int argc, char *argv[])
                 }
             }
             camera.update(position(players[myId].getframe().x,players[myId].getframe().y));
-            if(players[myId].isFlying || players[myId].isMovingSideways || lefthold || players[myId].respawning || SDL_GetTicks()-sendDatatime>500)
+            if(players[myId].isFlying || players[myId].isMovingSideways || lefthold || players[myId].respawning || sdl.getTicks()-sendDatatime>500)
             {
             c.sendData(players[myId],mousedirection,lefthold,Bullet::gettheta(mouseX,mouseY));
-            sendDatatime = SDL_GetTicks();
+            sendDatatime = sdl.getTicks();
             }
             playersalive =0;
             for(Player &p :players)
@@ -959,19 +955,14 @@ int main(int argc, char *argv[])
             window.display();
         }
         leftclick = false;
-        frameTime = SDL_GetTicks() - frameStart;
+        frameTime = sdl.getTicks() - frameStart;
 
         if (frameDelay > frameTime) {
-        SDL_Delay(frameDelay - frameTime);
+        sdl.delay(frameDelay - frameTime);
         }
         //cout<<"End of a loop";
     }
+    sdl.showCursor();
     window.cleanup();
-    Mix_FreeChunk(bulletSound);
-    Mix_FreeChunk(jetSound);
-    Mix_FreeMusic(introMusic);
-    Mix_CloseAudio();
-    SDL_ShowCursor(SDL_ENABLE);
-    SDL_Quit();
     return 0;
 }

@@ -1,31 +1,6 @@
-#pragma once
+#include "player.hpp"
 
-#include<random>
-class Bullet;
-
-class Player: public entity
-{   
-    private:
-    const int maxhealth=100; 
-    float health;
-    float nitro;
-    int mouseX, mouseY;
-    int weaponwidth, weaponheight;
-    int lives;
-    int id;
-    float takingdamage= false;
-    string name;
-
-    public:
-    float theta;
-    bool died;
-    int dir;
-    bool firing;
-    bool flying;
-    bool respawning;
-    Uint32 lastAnimationUpdateTime = 0;
-
-    Player(string n,int i)
+    Player::Player(string n,int i)
     {   
         name = n;
         health =100;
@@ -40,7 +15,7 @@ class Player: public entity
         firing = false;
     }
 
-    Player():entity(getrandomx(),700,75,100)
+    Player::Player():entity(getrandomx(),700,75,100)
     {   
         health =100;
         nitro =100;
@@ -52,25 +27,25 @@ class Player: public entity
         died = false;
         firing = false;
     }
-    void setvalues()
+    void Player::setvalues()
     {
         int ran = getrandomx();
         cout<<ran<<endl;
         setval(ran,700);
     }
-    void setvalues(int x, int y)
+    void Player::setvalues(int x, int y)
     {
         setval(x,y);
     }
-    string getname()
+    string Player::getname()
     {
         return name;
     }
-    int getid()
+    int Player::getid()
     {
         return id;
     }
-    int getrandomx()
+    int Player::getrandomx()
     {
         // Create a random number generator engine
     std::random_device rd;
@@ -87,70 +62,68 @@ class Player: public entity
     int randomNumber = dis(gen);
     return randomNumber;
     }
-    position getpos()
+    position Player::getpos()
     {
         return position(getframe().x,getframe().y);
     }
-    position getweaponsize()
+    position Player::getweaponsize()
     {
         return position(weaponwidth,weaponheight);
     }
-    int getlives()
+    int Player::getlives()
     {
         return lives;
     }
-    void refill()
+    void Player::refill()
     {
         lives =3;
         health =100;
     }
 
-    void movedown()
+    void Player::movedown()
     {
         getframe().y+=1;
     }
-    void moveSideways(int direction) {
+    void Player::moveSideways(int direction) {
         movementDirection = direction;
         isMovingSideways = true;
     }
     
-    void stopMovingSideways() {
+    void Player::stopMovingSideways() {
         isMovingSideways = false;
     }
 
-    void jump() {
+    void Player::jump() {
        
         isFlying = true;
 
     }
-    int gethealth()
+    int Player::gethealth()
     {
         return health;
     }
-    float getnitro()
+    float Player::getnitro()
     {
         return nitro;
     }
-    void stopFlying()
+    void Player::stopFlying()
     {
         isFlying = false;
     }
 
-
-    bool hit(Bullet &b);
-    void damage()
+    void Player::damage()
     {
     
         health -=2;
     }
-    void nodamage()
+    void Player::nodamage()
     {
         if(health<90) health += 0.2f;    
     }
 
 
 
-    bool isOnGround(std::vector<entity>& entities)
+    bool Player::isOnGround(std::vector<entity>& entities)
     {
         for (entity& e : entities)
         {
@@ -166,7 +139,7 @@ class Player: public entity
         
         return false;
     }
-    std::string sidecollision(std::vector<entity>& entities)
+    std::string Player::sidecollision(std::vector<entity>& entities)
     {
         for (entity& e : entities)
         {
@@ -188,7 +161,7 @@ class Player: public entity
         }
         return "nth";
     }
-    bool upcollide(std::vector<entity>& entities)
+    bool Player::upcollide(std::vector<entity>& entities)
     {
         for (entity& e : entities)
         {
@@ -206,7 +179,7 @@ class Player: public entity
         }
         return false;
     }
-    void updatePosition(int x, int y,int d,float t,bool fi,bool fly,bool res,bool dead)
+    void Player::updatePosition(int x, int y,int d,float t,bool fi,bool fly,bool res,bool dead)
     {
         getframe().x = x;
         getframe().y = y;
@@ -217,7 +190,7 @@ class Player: public entity
         respawning = res;
         died = dead;
     }
-    void update(std::vector<entity>& entities) {
+    void Player::update(std::vector<entity>& entities) {
         
         if(health<0 && lives >0)
         {
@@ -283,12 +256,25 @@ class Player: public entity
             }
         }
     }
-};
-void entity::updateHealth(Player &p)
-{
-    currentframe.w = p.gethealth()*2;
-}
-void entity::updatenitro(Player &p)
-{
-    currentframe.w = p.getnitro()*2;
-}
+bool Player::hit(Bullet &b)
+    {
+        
+    if(b.getframe().y<getframe().y+getframe().h && b.getframe().y+b.getframe().h>getframe().y)
+        {
+
+            if ( b.getframe().x+5<getframe().x+getframe().w && getframe().x<(b.getframe().x+b.getframe().w-5) )
+                {
+                return true;
+                }
+        }
+        
+        return false;
+    }
+    void entity::updateHealth(Player &p)
+    {
+        currentframe.w = p.gethealth()*2;
+    }
+    void entity::updatenitro(Player &p)
+    {
+        currentframe.w = p.getnitro()*2;
+    }
