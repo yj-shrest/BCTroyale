@@ -724,7 +724,7 @@ int main(int argc, char *argv[])
             crosshair.update(mouseX,mouseY);
             healthbar.updateHealth((players[myId]));
             camera.update(position(players[myId].getframe().x,players[myId].getframe().y));
-            if(players[myId].isFlying || players[myId].isMovingSideways || lefthold || players[myId].respawning ||sdl.getTicks()-sendDatatime>500)
+            if(players[myId].isFlying || players[myId].isMovingSideways || lefthold || players[myId].respawning)
             {
             s.sendData(players[myId],mousedirection,lefthold,Bullet::gettheta(mouseX,mouseY));
             sendDatatime = sdl.getTicks();
@@ -933,7 +933,7 @@ int main(int argc, char *argv[])
                 }
             }
             camera.update(position(players[myId].getframe().x,players[myId].getframe().y));
-            if(players[myId].isFlying || players[myId].isMovingSideways || lefthold || players[myId].respawning || sdl.getTicks()-sendDatatime>500)
+            if(players[myId].isFlying || players[myId].isMovingSideways || lefthold || players[myId].respawning)
             {
             c.sendData(players[myId],mousedirection,lefthold,Bullet::gettheta(mouseX,mouseY));
             sendDatatime = sdl.getTicks();
