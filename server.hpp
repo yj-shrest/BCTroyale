@@ -14,9 +14,6 @@ class Server
 private:
     sf::IpAddress serverIp;
     vector<sf::IpAddress> playerIps;
-    bool started = false;
-    bool gameover = false;
-    bool isChange = false;
     char c;
     renderwindow window;
     sf::Clock clock;

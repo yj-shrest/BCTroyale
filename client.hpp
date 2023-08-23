@@ -10,27 +10,18 @@
 
 class Client {
 private:
-    bool started = false;
-    bool gameover = false;
-    bool joined = false;
-    bool found = false;
-    jsoncons::json middleground;
-    sf::IpAddress serverIp;
-    sf::UdpSocket receivingSocket;
-    sf::UdpSocket dataSocket;
+    sf::IpAddress serverIp,hostIp, senderIp, dummyIP;
+    sf::UdpSocket receivingSocket,dataSocket;
     std::vector<std::string> playerNames;
     renderwindow window;
 
     std::string show = "Searching for a Game";
     char buffer[1024];
     size_t received;
-    sf::IpAddress hostIp, senderIp, dummyIP;
     unsigned short senderPort;
     jsoncons::json recievedJson;
     std::string jsonString;
-    sf::Clock clock;
-    sf::IpAddress broadcastAddress = sf::IpAddress::Broadcast;
-
+    bool found = false;
 public:
     Client(renderwindow &w);
     void initialize();

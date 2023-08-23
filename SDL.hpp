@@ -70,12 +70,13 @@ public:
     void hideCursor() const;
     Uint32 getTicks() const;
     void showCursor() const;
-    int playSoundChunk(Mix_Chunk* chunk, int channel, int loops);
+    int playSoundChunk(Mix_Chunk* &chunk, int channel, int loops);
     void renderCopy(Renderer* renderer, Texture* texture, const Rect* srcRect, const Rect* dstRect);
     void renderCopyEx(Renderer* renderer, Texture* texture, const Rect* srcRect, const Rect* dstRect, double angle, const Point* center, SDL_RendererFlip flip);
     void renderClear(Renderer* renderer);
     void destroyWindow(Window* window);
     void renderPresent(Renderer* renderer);
+    void destroyTexture(SDL_Texture* &texture);
     Texture* loadTexture(Renderer* renderer, const char* path);
     Font* openFont(const char* file, int size);
     Surface* renderTextSolid(Font* font, const char* text, Color color);

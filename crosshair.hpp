@@ -4,5 +4,5 @@
 class Crosshair : public entity {
 public:
     Crosshair(int px, int py, int pw, int ph, SDL::Texture* t);
-    void update(int x, int y);
+    void update(int &x, int &y);
 };

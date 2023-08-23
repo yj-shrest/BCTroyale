@@ -7,7 +7,7 @@ class Camera {
     int screenHeight;
     
 public:
-    Camera(int width, int height);
+    Camera(const int &width,const int &height);
 
     void update(const position& target);
 

@@ -18,9 +18,9 @@ public:
     bool remove;
     float range;
 
-    Bullet(int px, int py, int pw, int ph, SDL::Texture* t, int mx, int my, position cpos);
-    Bullet(int px, int py, int pw, int ph, SDL::Texture* t, float th, position cpos);
-    Bullet(int px, int py, int pw, int ph, SDL::Texture* t, position cpos);
+    Bullet(int px, int py, int pw, int ph, int mx, int my, position cpos);
+    Bullet(int px, int py, int pw, int ph, float th, position cpos);
+    Bullet(int px, int py, int pw, int ph, position cpos);
 
     void update();
     position getmouse();

@@ -43,8 +43,6 @@
                 {
                     playerIps.push_back(senderIp);
                     cerr << "Added player IP: " << senderIp << " to the vector." << endl;
-                    isChange = true;
-
                  }
             }
             return dataIn;

@@ -28,15 +28,14 @@
         currentframe.w=pw;
         currentframe.h =ph ;
     }
-    
+    int entity::getspeed()
+    {
+        return moveSpeed;
+    }
     SDL::Rect& entity::getframe() 
     {
         return currentframe;
     }
-     int entity::getspeed()
-     {
-        return moveSpeed;
-     }
     
     SDL::Texture* entity::getTxt()
     {

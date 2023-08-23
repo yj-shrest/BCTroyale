@@ -1,7 +1,7 @@
 
 #include "Bullet.hpp"
 
-    Bullet::Bullet(int  px, int py,int  pw, int ph, SDL::Texture*t,int mx,int my, position cpos):entity(px+cpos.x,py+cpos.y,pw,ph,t)
+    Bullet::Bullet(int  px, int py,int  pw, int ph,int mx,int my, position cpos):entity(px+cpos.x,py+cpos.y,pw,ph)
 {   
     frameposx = px;
     frameposy = py;
@@ -12,7 +12,7 @@
     initialpos = position(px,py);
     range = 400;
 }
-   Bullet:: Bullet(int  px, int py,int  pw, int ph, SDL::Texture*t, float th, position cpos):entity(px+cpos.x,py+cpos.y,pw,ph,t)
+   Bullet:: Bullet(int  px, int py,int  pw, int ph, float th, position cpos):entity(px+cpos.x,py+cpos.y,pw,ph)
 {   
     frameposx =px;
     frameposy = py;
@@ -21,7 +21,7 @@
     initialpos = position(px,py);
     range = 400;
 }
-    Bullet::Bullet(int  px, int py,int  pw, int ph, SDL::Texture*t,position cpos):entity(px,py,pw,ph,t)
+    Bullet::Bullet(int  px, int py,int  pw, int ph, position cpos):entity(px,py,pw,ph)
     {
         frameposx = px;
         frameposy = py;

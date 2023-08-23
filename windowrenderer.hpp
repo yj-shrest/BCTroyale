@@ -19,7 +19,7 @@ private:
     SDL_Texture* weaponfiretexture;
     SDL_Texture* healthBarRectTexture;
     SDL_Texture* healthBarTexture;
-
+    SDL::Texture *bulletTexture;
 public:
     SDL_Window* window;
 

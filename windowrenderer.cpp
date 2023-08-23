@@ -15,10 +15,18 @@ using namespace std;
         weaponfiretexture = loadTexture("assets/weaponfire.png");
         healthBarRectTexture = loadTexture("assets/healthbarrect.png");
         healthBarTexture = loadTexture("assets/healthbar.png");
+        bulletTexture = loadTexture ("assets/bullet.png");
     }
     void renderwindow::cleanup()
     {
         sdl.destroyWindow(window);
+        sdl.destroyTexture(playertexture);
+        sdl.destroyTexture(playerflyingtexture);
+        sdl.destroyTexture(playerwtexture);
+        sdl.destroyTexture(weapontexture);
+        sdl.destroyTexture(weaponfiretexture);
+        sdl.destroyTexture(healthBarRectTexture);
+        sdl.destroyTexture(healthBarTexture);
     }
 
     SDL::Texture* renderwindow::loadTexture(const char* filepath)
@@ -118,6 +126,9 @@ using namespace std;
     dst3.h = 40;
 
     sdl.renderCopy(renderer, textTexture, NULL, &dst3);
+    SDL_DestroyTexture(textTexture);
+    SDL_FreeSurface(textSurface);
+    TTF_CloseFont(font);
     }
 
     }
@@ -157,6 +168,7 @@ using namespace std;
     }
     }
     void renderwindow::render(std::vector<Bullet>& bull,position cpos) {
+    
     SDL::Rect dst;
     for (Bullet& b : bull) {
         dst.x = b.getframe().x - cpos.x;
@@ -165,7 +177,7 @@ using namespace std;
         dst.h = b.getframe().h;
         double angleDegrees = b.gettheta() * (180.0 / M_PI);
         SDL::Point center = { dst.w / 2, dst.h / 2 };
-        sdl.renderCopyEx(renderer, b.getTxt(), NULL, &dst, angleDegrees, &center, SDL::NoFlip);
+        sdl.renderCopyEx(renderer, bulletTexture, NULL, &dst, angleDegrees, &center, SDL::NoFlip);
     }
     }
 

@@ -24,7 +24,7 @@ int main(int argc, char *argv[])
 {
     Camera camera(width, height);
     SDL sdl;
-    renderwindow window("Minimiltia",width,height);
+    renderwindow window("BCT ROYALE",width,height);
     SDL::Event windowevent;
     Uint32 frameStart;
     int frameTime;
@@ -51,8 +51,8 @@ int main(int argc, char *argv[])
     SDL::Texture *hostjoinTexture = window.loadTexture("assets/hostjoin.png");
     SDL::Texture *joinbuttonTexture = window.loadTexture("assets/joinbutton.png");
     SDL::Texture *lobbyTexture = window.loadTexture("assets/lobby.png");
+    SDL::Texture *lobby2Texture = window.loadTexture("assets/lobby2.png");
     SDL::Texture *mobTexture = window.loadTexture("assets/mob.png");
-    SDL::Texture *bulletTexture = window.loadTexture ("assets/bullet.png");
     SDL::Texture *crosshairTexture = window.loadTexture ("assets/crosshair.png");
 
     SDL::SoundChunk *walkingSound = Mix_LoadWAV("assets/walking.wav");
@@ -72,6 +72,7 @@ int main(int argc, char *argv[])
     entity gameOverScreen(0,0,1100,700,gameoverTexture);
     entity modesScreen(0,0,1100,700,modesTexture);
     entity hostjoinScreen(0,0,1100,700,hostjoinTexture);
+    entity lobbyScreen2(0,0,1100,700,lobby2Texture);
     entity lobbyScreen(0,0,1100,700,lobbyTexture);
     entity joinbutton(300,300,500,120,joinbuttonTexture);
     Crosshair crosshair(0,0,9,9,crosshairTexture);
@@ -115,8 +116,7 @@ int main(int argc, char *argv[])
     int myId;
     bool once= true; 
     bool gettinghit = false;
-    bool loop = false;
-    Uint32 bulletstart1,bulletstart2,sendDatatime,respawnTime;
+    Uint32 bulletstart1,bulletstart2,respawnTime;
     int secondspassed=0;
     int playersalive;
     bool introMusicPlayed = false;
@@ -316,7 +316,7 @@ int main(int argc, char *argv[])
                 if(sdl.getTicks() -  bulletstart1 >100)
                 {
 
-               mybullets.push_back(Bullet(575,420,16,4,bulletTexture,mouseX,mouseY,camera.getPosition()));
+               mybullets.push_back(Bullet(575,420,16,4,mouseX,mouseY,camera.getPosition()));
                bulletstart1 = sdl.getTicks();
                sdl.playSoundChunk(bulletSound,-1, 0);
                 }
@@ -364,7 +364,7 @@ int main(int argc, char *argv[])
                     gettinghit = true;
                     if(sdl.getTicks() - bulletstart2>100)
                     {
-                        Enemybullets.push_back(Bullet(m.getframe().x,m.getframe().y+30,16,4,bulletTexture,(*player).getpos()));
+                        Enemybullets.push_back(Bullet(m.getframe().x,m.getframe().y+30,16,4,(*player).getpos()));
                         bulletstart2 = sdl.getTicks();
                          sdl.playSoundChannel(bulletSound,-1, 0);
 
@@ -506,7 +506,7 @@ int main(int argc, char *argv[])
             //client lobby
             window.clear();
             window.render(bg,position(0,0));
-            window.render(lobbyScreen,position(0,0));
+            window.render(lobbyScreen2,position(0,0));
             vector<Player> tempplayers;
             tempplayers = c.receivingThread(gamestarted);
             if(tempplayers.size()!=0) 
@@ -603,7 +603,7 @@ int main(int argc, char *argv[])
                     if(sdl.getTicks() - bulletstart2>100)
                     {
                         position pos = position(players[id].getframe().x-width/2 , players[id].getframe().y-height/2);
-                        Enemybullets.push_back(Bullet(575,420,16,4,bulletTexture,theta,pos));
+                        Enemybullets.push_back(Bullet(575,420,16,4,theta,pos));
                         bulletstart2 = sdl.getTicks();
                         sdl.playSoundChunk(bulletSound,-1, 0);
 
@@ -632,7 +632,7 @@ int main(int argc, char *argv[])
                 {
                 position pos = position (players[myId].getframe().x - width/2, players[myId].getframe().y - height/2);
               
-               mybullets.push_back(Bullet(575,420,16,4,bulletTexture,mouseX,mouseY,pos));
+               mybullets.push_back(Bullet(575,420,16,4,mouseX,mouseY,pos));
                bulletstart1 = sdl.getTicks();
                sdl.playSoundChunk(bulletSound,-1, 0);
 
@@ -676,7 +676,6 @@ int main(int argc, char *argv[])
             if(players[myId].hit(b) && !players[myId].respawning)
             {
                 players[myId].damage();
-                //cout<<players[myId].gethealth()<<endl;
             }
             else
             {
@@ -723,12 +722,12 @@ int main(int argc, char *argv[])
             }
             crosshair.update(mouseX,mouseY);
             healthbar.updateHealth((players[myId]));
+            nitrobar.updatenitro((players[myId]));
             camera.update(position(players[myId].getframe().x,players[myId].getframe().y));
             if(players[myId].isFlying || players[myId].isMovingSideways || lefthold || players[myId].respawning)
             {
             s.sendData(players[myId],mousedirection,lefthold,Bullet::gettheta(mouseX,mouseY));
-            sendDatatime = sdl.getTicks();
-            }
+           }
             playersalive =0;
             for(Player &p :players)
             {
@@ -818,7 +817,7 @@ int main(int argc, char *argv[])
                     if(sdl.getTicks() - bulletstart2>100)
                     {
                         position pos = position(players[id].getframe().x-width/2 , players[id].getframe().y-height/2);
-                        Enemybullets.push_back(Bullet(575,420,16,4,bulletTexture,theta,pos));
+                        Enemybullets.push_back(Bullet(575,420,16,4,theta,pos));
                         bulletstart2 = sdl.getTicks();
                         sdl.playSoundChunk(bulletSound,-1, 0);
 
@@ -844,7 +843,7 @@ int main(int argc, char *argv[])
                 if(sdl.getTicks() -  bulletstart1 >100)
                 {
                 position pos = position (players[myId].getframe().x - width/2, players[myId].getframe().y - height/2);
-               mybullets.push_back(Bullet(575,420,16,4,bulletTexture,mouseX,mouseY,pos));
+               mybullets.push_back(Bullet(575,420,16,4,mouseX,mouseY,pos));
                bulletstart1 = sdl.getTicks();
                sdl.playSoundChunk( bulletSound,-1, 0);
 
@@ -924,6 +923,7 @@ int main(int argc, char *argv[])
 
             window.display();
             healthbar.updateHealth((players[myId]));
+            nitrobar.updatenitro((players[myId]));
             crosshair.update(mouseX,mouseY);
             for(Player &p: players)
             {
@@ -936,7 +936,6 @@ int main(int argc, char *argv[])
             if(players[myId].isFlying || players[myId].isMovingSideways || lefthold || players[myId].respawning)
             {
             c.sendData(players[myId],mousedirection,lefthold,Bullet::gettheta(mouseX,mouseY));
-            sendDatatime = sdl.getTicks();
             }
             playersalive =0;
             for(Player &p :players)
@@ -960,9 +959,31 @@ int main(int argc, char *argv[])
         if (frameDelay > frameTime) {
         sdl.delay(frameDelay - frameTime);
         }
-        //cout<<"End of a loop";
     }
     sdl.showCursor();
+
+    sdl.destroyTexture(background);
+    sdl.destroyTexture(rectplatform1);
+    sdl.destroyTexture(rectplatform2);
+    sdl.destroyTexture(sqplatform);
+    sdl.destroyTexture(healthBarTexture);
+    sdl.destroyTexture(nitroBarTexture);
+    sdl.destroyTexture(gamelogoTexture);
+    sdl.destroyTexture(namemenuTexture);
+    sdl.destroyTexture(heartTexture);
+    sdl.destroyTexture(gameoverTexture);
+    sdl.destroyTexture(modesTexture);
+    sdl.destroyTexture(hostjoinTexture);
+    sdl.destroyTexture(joinbuttonTexture);
+    sdl.destroyTexture(lobbyTexture);
+    sdl.destroyTexture(mobTexture);
+    sdl.destroyTexture(crosshairTexture);
+
+    Mix_FreeChunk(jetSound);
+    Mix_FreeChunk(bulletSound);
+    Mix_FreeChunk(walkingSound);
+    Mix_FreeMusic(introMusic);
+
     window.cleanup();
     return 0;
 }

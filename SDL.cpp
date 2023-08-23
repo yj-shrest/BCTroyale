@@ -97,10 +97,13 @@ void SDL::showCursor() const {
     SDL_ShowCursor(SDL_ENABLE);
 }
 
-int SDL::playSoundChunk(SDL::SoundChunk* chunk, int channel, int loops) {
+int SDL::playSoundChunk(SDL::SoundChunk* &chunk, int channel, int loops) {
     return Mix_PlayChannel(channel, chunk, loops);
 }
-
+void SDL::destroyTexture(SDL_Texture* &texture)
+{
+    SDL_DestroyTexture(texture);
+}
 void SDL::renderCopy(SDL_Renderer* renderer, SDL_Texture* texture, const SDL_Rect* srcRect, const SDL_Rect* dstRect) {
     SDL_RenderCopy(renderer, texture, srcRect, dstRect);
 }

@@ -1,6 +1,6 @@
 #include "camera.hpp"
 
-Camera::Camera(int width, int height) : screenWidth(width), screenHeight(height) {}
+Camera::Camera(const int &width,const  int &height) : screenWidth(width), screenHeight(height) {}
 
 void Camera::update(const position& target) {
     pos.x = target.x - screenWidth / 2;
