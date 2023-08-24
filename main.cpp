@@ -472,8 +472,16 @@ int main(int argc, char *argv[])
             }
             if(leftclick)
             {
-                screen = 8;// start game
-                once = true;
+                sdl.getMouseState(&mouseX, &mouseY);
+                if(mouseX>720 && mouseX<1020)
+                {
+                    if(mouseY>500 && mouseY<610)
+                    {
+                        screen = 8;// start game
+                        once = true;
+                    }
+
+                }
             }
             window.display();
         }
@@ -493,10 +501,18 @@ int main(int argc, char *argv[])
         {
             window.render(joinbutton,position(0,0));
             if(leftclick)   
-            {      
-            c.sendconfirmation(textInput);
-            screen = 7;    
-            once = true;
+            {  
+                sdl.getMouseState(&mouseX, &mouseY);
+                if(mouseX>joinbutton.getframe().x && mouseX<joinbutton.getframe().x+500)
+                {
+                    if(mouseY>joinbutton.getframe().y && mouseY<joinbutton.getframe().y+120)
+                    {
+                        c.sendconfirmation(textInput);
+                        screen = 7;    
+                        once = true;
+                    }
+
+                }    
             }
         }
             window.display();
@@ -560,6 +576,7 @@ int main(int argc, char *argv[])
                 {
                     players[myId].respawning = false;
                     secondspassed =0;
+                    s.sendData(players[myId],mousedirection,lefthold,Bullet::gettheta(mouseX,mouseY));
                 }
             }
             else if(playersalive ==1 && !players[myId].died)

@@ -27,9 +27,7 @@ using namespace jsoncons;
                 for (size_t i = 0; i < playersArray.size(); ++i)
                 {
                     string playerName = playersArray[i];
-                    // Extract more attributes as needed
                     Player player(playerName,i);
-                    cout<<playerName;
                     receivedPlayers.push_back(player);
                 }
                 return receivedPlayers;
@@ -62,7 +60,7 @@ using namespace jsoncons;
 void Client::sendconfirmation(string n)
 
     {
-            dataSocket.setBlocking(false);
+            //dataSocket.setBlocking(false);
             serverIp = hostIp;
 
             json join;

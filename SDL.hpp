@@ -81,7 +81,4 @@ public:
     Font* openFont(const char* file, int size);
     Surface* renderTextSolid(Font* font, const char* text, Color color);
     Texture* createTextureFromSurface(Renderer* renderer, Surface* surface);
-
-private:
-    // Any internal state or resources can be managed here
 };
