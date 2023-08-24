@@ -98,7 +98,7 @@ int main(int argc, char *argv[])
     vector <Bullet> mybullets;
     vector <Bullet> Enemybullets;
     const int gvalue= 10;
-    bool init= false;
+    bool init= true;
 
     int mousedirection= 1;
     int mouseX, mouseY;
@@ -220,8 +220,8 @@ int main(int argc, char *argv[])
 
         
         window.clear();
-        if ((screen == 1 || screen == 2 || screen == 4 || 
-             screen == 5 || screen == 6 || screen == 7) && Mix_PlayingMusic() == 0) {
+        if ((init || screen == 1 || screen == 2 || screen == 4 || 
+             screen == 5 || screen == 6 || screen == 7 || screen ==10) && Mix_PlayingMusic() == 0) {
             sdl.playMusic(introMusic, 0);  // Play intro music once
             introMusicPlayed = true;
         }
@@ -233,7 +233,7 @@ int main(int argc, char *argv[])
         window.render(bg,position(0,0)); 
         window.render(gamelogo,position(0,0));
         window.display();
-        sdl.delay(1000);
+        sdl.delay(2000);
         init = false;
         }
 
