@@ -16,3 +16,11 @@ Command `make` will compile the program for you
 `./BCTroyale` or `./BCTroyale.exe` (windows)
 ## Or 
 simply opening the executble BCTroyale
+
+
+## Gameplay
+![alt text](https://raw.github.com/5ujan/BCTroyale/main/screenshots/one.png)
+![alt text](https://raw.github.com/5ujan/BCTroyale/main/screenshots/two.png)
+![alt text](https://raw.github.com/5ujan/BCTroyale/main/screenshots/three.png)
+![alt text](https://raw.github.com/5ujan/BCTroyale/main/screenshots/four.png)
+![alt text](https://raw.github.com/5ujan/BCTroyale/main/screenshots/five.png)
