@@ -19,8 +19,8 @@ simply opening the executble BCTroyale
 
 
 ## Gameplay
-![alt text](https://raw.github.com/5ujan/BCTroyale/blob/main/screenshots/one.png)
-![alt text](https://raw.github.com/5ujan/BCTroyale/blob/main/screenshots/two.png)
-![alt text](https://raw.github.com/5ujan/BCTroyale/blob/main/screenshots/three.png)
-![alt text](https://raw.github.com/5ujan/BCTroyale/blob/main/screenshots/four.png)
-![alt text](https://raw.github.com/5ujan/BCTroyale/blob/main/screenshots/five.png)
+![alt text](https://raw.github.com/5ujan/BCTroyale/main/screenshots/one.png)
+![alt text](https://raw.github.com/5ujan/BCTroyale/main/screenshots/two.png)
+![alt text](https://raw.github.com/5ujan/BCTroyale/main/screenshots/three.png)
+![alt text](https://raw.github.com/5ujan/BCTroyale/main/screenshots/four.png)
+![alt text](https://raw.github.com/5ujan/BCTroyale/main/screenshots/five.png)
